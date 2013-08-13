@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:a4j="http://richfaces.org/a4j"
+	  xmlns:rich="http://richfaces.org/rich">
+<h:head>
+	<title>身份请求管理</title>
+	<link rel="stylesheet" type="text/css" href="css/id.css" />
+</h:head>
+<body>
+<f:view>
+	<div id="idRequestInfoDiv" style="margin-top: 5px;">
+		<span>身份描述申请列表</span>
+		<div>
+			<h:panelGroup layout="block" rendered="#{0 >= viewIDRequestBean.userIDRequests.count}">
+			当前没有任何身份描述申请，你可以<h:outputLink value="#" onclick="#{rich:component('panel')}.show()">申请</h:outputLink>一个
+			</h:panelGroup>
+		</div>
+	<h:form id="reqAjaxForm" rendered="#{viewIDRequestBean.userIDRequests.count > 0}">
+		<rich:dataTable id="idRequestList" styleClass="richDataTableStyle" rows="3"
+			align="center" value="#{viewIDRequestBean.userIDRequests}" var="u">
+			<f:facet name="header">
+				<rich:columnGroup>
+					<h:column>
+						<h:outputText value="申请编号" />
+					</h:column>
+					<h:column>
+						<h:outputText value="公钥" />
+					</h:column>
+					<h:column>
+						<h:outputText value="申请日期" />
+					</h:column>
+					<h:column>
+						<h:outputText value="状态" />
+					</h:column>
+				</rich:columnGroup>
+			</f:facet>
+			<h:column>
+				<h:outputText value="#{u.requestId}" />
+			</h:column>
+			<h:column>
+				<h:outputText value="#{u.identityString}" />
+			</h:column>
+			<h:column>
+				<h:outputText value="#{u.applicationDate}">
+					<f:convertDateTime pattern="yyyy-MM-dd" timeZone="GMT+8" />
+				</h:outputText>
+			</h:column>
+			<h:column>
+				<h:outputText value="#{u.status}">
+					<f:converter converterId="requestStatusConverter" />
+				</h:outputText>
+			</h:column>
+			<f:facet name="footer">
+				<rich:dataScroller for="idRequestList" styleClass="ds"
+					ignoreDupResponses="false" renderIfSinglePage="true" maxPages="5" />
+			</f:facet>
+		</rich:dataTable>
+	</h:form>
+	</div>
+	<rich:popupPanel id="panel" width="400" onmaskclick="#{rich:component('panel')}.hide()" autosized="true">
+        <f:facet name="header">
+            <h:panelGroup>
+                <h:outputText value="Modal Panel" />
+            </h:panelGroup>
+        </f:facet>
+        <f:facet name="controls">
+            <h:outputLink onclick="#{rich:component('panel')}.hide(); return false;" value="#">
+                <h:graphicImage value="images/close.png" styleClass="hidelink" id="hidelink" />
+            </h:outputLink>
+        </f:facet>
+        <span class="popupTitle">申请身份描述</span>
+        <h:form id="requestIDForm">
+        <div class="popupFormItem">
+	        <span>身份字符串</span>
+	        <h:inputText value="#{editIDRequestBean.identityString}">
+	        </h:inputText>
+        </div>
+        <div class="popupFormItem">
+	        <span>所属系统</span>
+	        <h:inputText value="#{editIDRequestBean.ibeSystemId}">
+	        </h:inputText>
+        </div>
+        <div class="popupFormItem">
+	        <span>类型</span>
+	        <h:selectOneListbox value="#{editIDRequestBean.type}">
+		   		<f:selectItem itemValue="0" itemLabel="电子邮件地址" />
+		   		<f:selectItem itemValue="1" itemLabel="手机号码" />
+			</h:selectOneListbox>
+        </div>
+        <div class="popupFormItem">
+			<span>访问密码</span>
+			<h:inputSecret value="#{editIDRequestBean.password}"></h:inputSecret>
+        </div>
+        <div class="popupFormItem">
+			<h:commandButton value="申请" action="#{editIDRequestBean.addIDRequest}" />
+        </div>
+        </h:form>
+    </rich:popupPanel>
+    <a4j:commandLink onclick="#{rich:component('panel')}.show()" value="申请身份描述" id="link" rendered="#{viewIDRequestBean.userIDRequests.count > 0}" />
+</f:view>
+</body>
+</html>

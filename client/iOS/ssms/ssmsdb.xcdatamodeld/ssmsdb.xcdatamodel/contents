@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="872" systemVersion="11E53" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+    <entity name="IBEContact" representedClassName="IBEContact" syncable="YES">
+        <attribute name="default_id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="family_name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="first_name" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="sent_messages" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="IBEMessage" inverseName="from" inverseEntity="IBEMessage" syncable="YES"/>
+        <relationship name="system" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="IBESystem" inverseName="contacts" inverseEntity="IBESystem" syncable="YES"/>
+    </entity>
+    <entity name="IBEIdentityDescription" representedClassName="IBEIdentityDescription" syncable="YES">
+        <attribute name="id_data" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="id_status" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="id_str" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="IBELatestMessage" representedClassName="IBELatestMessage" syncable="YES">
+        <attribute name="contact" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="message_content" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="message_date" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="message_read" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+    </entity>
+    <entity name="IBEMessage" representedClassName="IBEMessage" syncable="YES">
+        <attribute name="content" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="message_id" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="receive_date" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="type" optional="YES" attributeType="Integer 32" syncable="YES"/>
+        <relationship name="from" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="IBEContact" inverseName="sent_messages" inverseEntity="IBEContact" syncable="YES"/>
+    </entity>
+    <entity name="IBESystem" representedClassName="IBESystem" syncable="YES">
+        <attribute name="ibe_system_number" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="pairing" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="public_params" optional="YES" attributeType="Binary" syncable="YES"/>
+        <relationship name="contacts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="IBEContact" inverseName="system" inverseEntity="IBEContact" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="IBEContact" positionX="160" positionY="192" width="137" height="120"/>
+        <element name="IBEIdentityDescription" positionX="169" positionY="81" width="128" height="90"/>
+        <element name="IBELatestMessage" positionX="169" positionY="333" width="128" height="90"/>
+        <element name="IBEMessage" positionX="-45" positionY="207" width="128" height="120"/>
+        <element name="IBESystem" positionX="378" positionY="207" width="128" height="120"/>
+    </elements>
+</model>

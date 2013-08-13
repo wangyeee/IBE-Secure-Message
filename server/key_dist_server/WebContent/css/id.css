@@ -1,0 +1,29 @@
+@CHARSET "UTF-8";
+
+#idRequestInfoDiv {
+}
+
+#idRequestInfoDiv span {
+}
+
+#idRequestInfoDiv div {
+}
+
+.popupFormItem {
+	margin: 0px;
+	width: 100%;
+}
+
+.popupFormItem span {
+	float: left;
+	margin-left: 0px;
+	text-align: right;
+	width: 25%;
+}
+
+.popupFormItem input select {
+	float: left;
+	margin-left: 10px;
+	width: 60%;
+}
+

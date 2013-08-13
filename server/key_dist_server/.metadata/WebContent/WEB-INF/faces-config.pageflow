@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pageflow:Pageflow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf13274134168060" configfile="/ibeserver/WebContent/WEB-INF/faces-config.xml">
+  <nodes xsi:type="pageflow:PFPage" name="add" x="120" y="72" id="pf13275817488090" referenceLink="//@navigationRule.0/@navigationCase.1/@toViewId|" outlinks="pf13275817488092 pf13277202409260" inlinks="pf13277202409260" path="/reg.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="index.xhtml" x="276" y="228" id="pf13275817488094" referenceLink="//@navigationRule.1/@navigationCase.0/@toViewId|" inlinks="pf13275817488092 pf13277202409261" path="/index.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="login.xhtml" x="420" y="72" id="pf13277202409262" referenceLink="//@navigationRule.1/@navigationCase.1/@toViewId|" outlinks="pf13277202409261 pf13277202409263" inlinks="pf13277202409263" path="/login.xhtml"/>
+  <links id="pf13275817488092" target="pf13275817488094" source="pf13275817488090" outcome="success" redirect="true"/>
+  <links id="pf13277202409260" target="pf13275817488090" source="pf13275817488090" outcome="failure"/>
+  <links id="pf13277202409261" target="pf13275817488094" source="pf13277202409262" outcome="success" redirect="true"/>
+  <links id="pf13277202409263" target="pf13277202409262" source="pf13277202409262" outcome="failure"/>
+</pageflow:Pageflow>

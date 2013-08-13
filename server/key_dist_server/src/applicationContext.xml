@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd">
+	<jee:jndi-lookup id="ibeSystemDAO" jndi-name="java:global/ibe/ibegen/IBESystemBeanImpl!hamaster.gradesign.idmgmt.IBESystemBeanLocal" />
+	<jee:jndi-lookup id="identityDescriptionDAO" jndi-name="java:global/ibe/ibegen/IdentityDescriptionBeanImpl!hamaster.gradesign.idmgmt.IdentityDescriptionBeanLocal" />
+
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="configLocation">
+			<value>classpath:hibernate.cfg.xml</value>
+		</property>
+	</bean>
+	<bean id="userDAO" class="hamaster.gradesign.dao.impl.UserDAOHibernateImpl">
+		<property name="factory" ref="sessionFactory" />
+	</bean>
+	<bean id="idRequestDAO" class="hamaster.gradesign.dao.impl.IDRequestDAOHibernateAndMySQLImpl">
+		<property name="factory" ref="sessionFactory" />
+	</bean>
+	<bean id="ibeRequestHandlerDaemon" class="hamaster.gradesign.daemon.IBERequestHandlerDaemon">
+		<property name="identityDescriptionBean" ref="identityDescriptionDAO" />
+		<property name="idRequestDAO" ref="idRequestDAO" />
+<!-- 		<property name="interval" value="60000" /> -->
+		<property name="interval" value="3600000000" />
+		<property name="batchSize" value="10" />
+	</bean>
+	<bean id="clientManager" class="hamaster.gradesign.mgr.ClientManager">
+		<property name="identityDescriptionBean" ref="identityDescriptionDAO" />
+		<property name="userDAO" ref="userDAO" />
+		<property name="idRequestDAO" ref="idRequestDAO" />
+		<property name="systemBean" ref="ibeSystemDAO" />
+	</bean>
+
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+    <!-- Java Mail config-->
+		<property name="host" value="your smtp server" />
+		<property name="port" value="smtp server port" />
+		<property name="username" value="your email@address" />
+		<property name="password" value="your password" />
+		<property name="javaMailProperties">
+			<props>
+				<prop key="mail.smtp.auth">true</prop>
+				<prop key="mail.smtp.timeout">25000</prop>
+				<prop key="mail.smtp.starttls.enable">true</prop>
+				<prop key="mail.smtp.socketFactory.class">javax.net.ssl.SSLSocketFactory</prop>
+				<prop key="mail.smtp.socketFactory.fallback">false</prop>
+			</props>
+		</property>
+	</bean>
+	<bean id="mailParameterGenerator" class="hamaster.gradesign.mail.IBEMailParameterGenerator">
+		<property name="requestDAO" ref="idRequestDAO" />
+		<property name="userDAO" ref="userDAO" />
+	</bean>
+	<bean id="mailDaemon" class="hamaster.gradesign.mail.IBEMailDaemon">
+		<property name="mailSender" ref="mailSender" />
+		<property name="idRequestDAO" ref="idRequestDAO" />
+		<property name="mailParameterGenerator" ref="mailParameterGenerator"></property>
+		<property name="userDAO" ref="userDAO" />
+		<property name="userBatchSize" value="10" />
+		<property name="idBatchSize" value="20" />
+		<property name="interval" value="100000000" />
+	</bean>
+</beans>
