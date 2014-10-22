@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 /**
  * IBE系统参数 包含系统公共参数和系统主密钥
+ * The system parameter of an IBE system, containing the public parameter and system master key.
  * @author <a href="mailto:wangyeee@gmail.com">Wang Ye</a>
  */
 public class IBESystemParameter implements Serializable, IBEConstraints {
@@ -15,11 +16,13 @@ public class IBESystemParameter implements Serializable, IBEConstraints {
 
 	/**
 	 * 公共参数
+	 * The public key
 	 */
 	protected IBEPublicParameter publicParameter;
 
 	/**
 	 * 主密钥
+	 * The system master key, all user private keys are generated from this key.
 	 */
 	protected byte[] masterKey;
 
@@ -99,6 +102,7 @@ public class IBESystemParameter implements Serializable, IBEConstraints {
 			Arrays.fill(zero, (byte) 0);
 			out.write(zero);
 		} else {
+			// TODO encryption is also needed to protect the master key with a password.
 			out.write(masterKey);
 		}
 		if (publicParameter != null)
