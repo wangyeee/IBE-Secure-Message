@@ -17,11 +17,14 @@ public class IBEPlainText implements IBEConstraints, Serializable {
 
 	/**
 	 * 明文内容 长度128字节
+	 * Length of plain text, max 128 bytes
 	 */
 	private byte[] content;
 
 	/**
 	 * 明文的有效长度 最大为126
+	 * Max length of mutable plain text, 126 bytes.
+	 * The first and 64th byte must be zero to avoid overflow.
 	 */
 	private int length;
 
@@ -90,8 +93,9 @@ public class IBEPlainText implements IBEConstraints, Serializable {
 
 	/**
 	 * 获取解密后明文中的有效内容
+	 * Get the 126 bytes content of decrypted plain text
 	 * @param plainText 要获取的明文
-	 * @return 包含有效内容的字节数组
+	 * @return 包含有效内容的字节数组(Byte array containing the plain text)
 	 */
 	public static byte[] getSignificantBytes(IBEPlainText plainText) {
 		synchronized (plainText) {
@@ -109,6 +113,7 @@ public class IBEPlainText implements IBEConstraints, Serializable {
 
 	/**
 	 * 通过特定长度的字节构建IBEPlainText对象
+	 * Construct an IBEPlainText object from certain length of bytes, the length must be from 1 to 126
 	 * @param significantBytes 有效字节 长度在1到126字节中间
 	 * @return IBEPlainText
 	 */
@@ -134,6 +139,7 @@ public class IBEPlainText implements IBEConstraints, Serializable {
 	 * 序列化字段：<br>
 	 * 明文内容 128字节<br>
 	 * 明文有效长度 1字节<br>
+	 * Serialize this object, the first 128 bytes are padded plain text and the last byte is the length of byte used(1 to 126)
 	 * @see hamaster.gradesgin.ibe.IBEConstraints#writeExternal(java.io.OutputStream)
 	 */
 	@Override
