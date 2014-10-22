@@ -12,6 +12,7 @@ import java.util.Arrays;
 
 /**
  * IBE系统公共参数
+ * The public parameter of an IBE system
  * @author <a href="mailto:wangyeee@gmail.com">Wang Ye</a>
  */
 public class IBEPublicParameter implements Serializable, IBEConstraints {
@@ -19,21 +20,25 @@ public class IBEPublicParameter implements Serializable, IBEConstraints {
 
 	/**
 	 * 参数g
+	 * parameter G
 	 */
 	protected byte[] paramG;
 
 	/**
 	 * 参数g1
+	 * parameter G1
 	 */
 	protected byte[] paramG1;
 
 	/**
 	 * 参数h
+	 * parameter H
 	 */
 	protected byte[] paramH;
 
 	/**
 	 * 椭圆函数参数
+	 * the pairing
 	 */
 	protected byte[] pairing;
 
@@ -130,6 +135,7 @@ public class IBEPublicParameter implements Serializable, IBEConstraints {
 	 * h 128字节<br>
 	 * 椭圆函数参数长度 4字节<br>
 	 * 椭圆函数参数
+	 * g 128 bytes, g1 128 bytes, h 128 bytes, length of pairing 4 bytes, pairing
 	 * @see hamaster.gradesgin.ibe.IBEConstraints#writeExternal(java.io.OutputStream)
 	 */
 	@Override
