@@ -17,11 +17,14 @@ public class IBECipherText implements Serializable, IBEConstraints {
 
 	/**
 	 * 密文uvw对象序列 共384字节
+	 * 384 bytes of (u, v, w)
 	 */
 	private byte[] uvw;
 
 	/**
 	 * 对应明文有效长度 单位字节
+	 * used length of plain text.
+	 * should this length also be encrypted???
 	 */
 	private int length;
 
@@ -88,9 +91,10 @@ public class IBECipherText implements Serializable, IBEConstraints {
 	}
 
 	/**
-	 * 序列化字段：<br>
-	 * 密文内容 384字节<br>
-	 * 明文有效长度 1字节
+	 * 序列化字段：<br/>
+	 * 密文内容 384字节<br/>
+	 * 明文有效长度 1字节<br/>
+	 * Serialize this objetc, first 384 bytes are (u,v,w) and last byte is the length of plain text(1 to 126)
 	 * @see hamaster.gradesgin.ibe.IBEConstraints#writeExternal(java.io.OutputStream)
 	 */
 	@Override
