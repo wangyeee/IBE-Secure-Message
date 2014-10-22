@@ -21,14 +21,17 @@ import java.util.Random;
 
 /**
  * 基于身份加密(IBE)的核心库，提供相关的方法
+ * Core utils of IBE
  * @author <a href="mailto:wangyeee@gmail.com">Wang Ye</a>
  */
 public class IBEEngine {
 
 	/**
 	 * 初始化一个IBE系统
-	 * @param pairingIn 椭圆函数参数
+	 * Setup an IBE system
+	 * @param pairingIn 椭圆函数参数 the pairing
 	 * @return 系统参数 如果椭圆函数参数非法或者出现其它错误返回null
+	 * returns the IBESystemParameter object when success, otherwise return null
 	 */
 	public static IBESystemParameter setup(byte[] pairingIn) {
 		byte[] alphaOut = new byte[IBELibrary.PBC_ZR_SIZE];
@@ -52,9 +55,10 @@ public class IBEEngine {
 
 	/**
 	 * 为一个用户生成私钥
-	 * @param system IBE系统
-	 * @param user 私钥请求用户
-	 * @return 用户的私钥
+	 * Generate a private key for a user
+	 * @param system IBE系统 the system parameter
+	 * @param user 私钥请求用户 the user
+	 * @return 用户的私钥 the generated private key
 	 */
 	public static IBEPrivateKey keygen(IBESystemParameter system, String user) {
 		byte[] hIDOut = new byte[IBELibrary.PBC_G_SIZE];
@@ -76,10 +80,11 @@ public class IBEEngine {
 
 	/**
 	 * 对数据进行加密
-	 * @param publicParameter 接收方公共参数
-	 * @param plainText 明文
-	 * @param receiver 接收着身份
-	 * @return 密文
+	 * encryption
+	 * @param publicParameter 接收方公共参数 the recipients' public key 
+	 * @param plainText 明文 the plain text
+	 * @param receiver 接收着身份 the recipient
+	 * @return 密文 cipher text
 	 */
 	public static IBECipherText encrypt(IBEPublicParameter publicParameter, IBEPlainText plainText, String receiver) {
 		byte[] cipherBufferOut = new byte[IBELibrary.PBC_G_SIZE * 3];
@@ -98,9 +103,10 @@ public class IBEEngine {
 
 	/**
 	 * 对密文解密
+	 * decryption
 	 * @param cipherText 密文
 	 * @param privateKey 接收方私钥
-	 * @return 解密后明文
+	 * @return 解密后明文 plain text
 	 */
 	public static IBEPlainText decrypt(IBECipherText cipherText, IBEPrivateKey privateKey) {
 		byte[] plainBufferOut = new byte[IBELibrary.PBC_G_SIZE];
@@ -118,11 +124,13 @@ public class IBEEngine {
 
 	/**
 	 * 生成证书
-	 * @param user 证书所有者
+	 * Generate certificate
+	 * @param user 证书所有者 certificate owner
 	 * @param root 签名用根证书 如果生成根证书 则传入一个只包含椭圆函数信息的证书对象
-	 * @param validAfter 有效期开始日期
-	 * @param period 有效时间 单位毫秒
-	 * @return 生成的证书
+	 * the root certificate, if this paramater only contains a pairing, then this method will generate a root certificate
+	 * @param validAfter 有效期开始日期 the certificate effective start date
+	 * @param period 有效时间 单位毫秒 the certificate valid time period, in millisecond.
+	 * @return 生成的证书 the certificate
 	 */
 	public static IBSCertificate generateCertificate(String user, IBSCertificate root, Date validAfter, long period) {
 		IBSCertificate root0 = root;
@@ -154,9 +162,10 @@ public class IBEEngine {
 
 	/**
 	 * 进行数字签名
+	 * Digital signing prcess
 	 * @param certificate 签名证书
 	 * @param digest 待签名数据摘要
-	 * @param hash 摘要方法
+	 * @param hash 摘要方法 e.g. SHA1 or MD5
 	 * @return 数字签名
 	 */
 	public static IBSSignature sign(IBSCertificate certificate, byte[] digest, String hash) {
@@ -178,9 +187,10 @@ public class IBEEngine {
 
 	/**
 	 * 验证数字签名
+	 * Verify a digital signature
 	 * @param signature 数字签名
 	 * @param digest 待验证数据摘要
-	 * @return 当且仅当数据一致且签名合法时验证通过
+	 * @return 当且仅当数据一致且签名合法时验证通过 only if the verification passes it returns true
 	 */
 	public static boolean verify(IBSSignature signature, byte[] digest) {
 		if (signature == null || digest == null)
