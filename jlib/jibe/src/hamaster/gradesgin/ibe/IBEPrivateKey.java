@@ -13,6 +13,7 @@ import java.util.Arrays;
 
 /**
  * 用户私钥
+ * The private key
  * @author <a href="mailto:wangyeee@gmail.com">Wang Ye</a>
  */
 public class IBEPrivateKey implements Serializable, IBEConstraints, PrivateKey {
@@ -20,21 +21,25 @@ public class IBEPrivateKey implements Serializable, IBEConstraints, PrivateKey {
 
 	/**
 	 * 私钥rID部分
+	 * rID part of private ley, length is 20 bytes;
 	 */
 	protected byte[] rID;
 
 	/**
 	 * 私钥hID部分
+	 * hID part ot private key, length is 128 bytes.
 	 */
 	protected byte[] hID;
 
 	/**
 	 * 椭圆函数参数
+	 * pairing
 	 */
 	private byte[] pairing;
 
 	/**
 	 * 私钥所有者身份 即对应公钥
+	 * the public key, e.g. email address
 	 */
 	private String userString;
 
@@ -161,6 +166,8 @@ public class IBEPrivateKey implements Serializable, IBEConstraints, PrivateKey {
 	 * 用户字符串不定长度<br>
 	 * 椭圆参数长度4字节<br>
 	 * 椭圆参数不定长度
+	 * Serialize the private key, this implementation writes key content directly to a file, keep it private!!!
+	 * Sequence: rID - 20 bytes, hID - 128 bytes, length of public key - 4 bytes, public key, length of pairing - 4 bytes, pairing
 	 * @see hamaster.gradesgin.ibe.IBEConstraints#writeExternal(java.io.OutputStream)
 	 */
 	@Override
@@ -172,6 +179,7 @@ public class IBEPrivateKey implements Serializable, IBEConstraints, PrivateKey {
 			return;
 		}
 		// 不编码，直接将私钥写入输出流
+		// TODO encrypt the private key with a password.
 		byte[] rBuffer = new byte[IBE_ZR_SIZE];
 		Arrays.fill(rBuffer, (byte) 0);
 		if (rID != null)
