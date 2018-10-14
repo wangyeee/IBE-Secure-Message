@@ -28,3 +28,7 @@ jlib/jibe/.project
 jlib/jibe/.settings/
 jlib/.project
 jlib/.settings/
+
+server/key_gen_server/.classpath
+server/key_gen_server/.project
+server/key_gen_server/.settings/
