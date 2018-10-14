@@ -20,8 +20,11 @@ buildNumber.properties
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
 
-.classpath
-.project
-.settings/*
-node_modules/*
-src/main/resources/static/built/*
+jlib/ibejnilib/.classpath
+jlib/ibejnilib/.project
+jlib/ibejnilib/.settings/
+jlib/jibe/.classpath
+jlib/jibe/.project
+jlib/jibe/.settings/
+jlib/.project
+jlib/.settings/

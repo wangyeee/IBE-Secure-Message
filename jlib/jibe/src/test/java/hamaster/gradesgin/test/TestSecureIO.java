@@ -41,6 +41,8 @@ public class TestSecureIO {
             String s = Hex.hex(sData);
             System.out.println(s);
             assertEquals(testData, s);
+            capsule.close();
+            capsule1.close();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -70,6 +72,8 @@ public class TestSecureIO {
             Object sData = capsule1.getDataAsObject();
             System.out.println(sData);
             assertEquals(testData, sData);
+            capsule.close();
+            capsule1.close();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {

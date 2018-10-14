@@ -267,9 +267,9 @@ public class IBECapsuleAESImpl implements IBECapsule {
 
     /*
      * (non-Javadoc)
-     * @see java.lang.Object#finalize()
+     * @see hamaster.gradesgin.util.IBECapsule#close()
      */
-    protected void finalize() throws Throwable {
+    public void close() {
         if (data != null)
             Arrays.fill(data, (byte) 0);
         if (key != null)
@@ -278,7 +278,6 @@ public class IBECapsuleAESImpl implements IBECapsule {
             Arrays.fill(cipherText, (byte) 0);
         if (keyHash != null)
             Arrays.fill(keyHash, (byte) 0);
-        super.finalize();
     }
 
     private void ensureNotNull(Object ... objs) throws NullPointerException {
