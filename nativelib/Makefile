@@ -5,7 +5,7 @@ CC = gcc
 
 LDFLAGS = /usr/local/lib
 
-JNIINCLUDE = /usr/lib/jvm/java-7-openjdk-amd64/include
+JNIINCLUDE = -I/usr/lib/jvm/java-9-openjdk-amd64/include -I/usr/lib/jvm/java-9-openjdk-amd64/include/linux
 
 TARGET=main
 
@@ -26,7 +26,7 @@ jnilib: ibe.o hamaster_gradesign_ibe_jni_IBENative.o
 	$(CC) -shared -fPIC -o lib$(JNILIBNAME).so hamaster_gradesign_ibe_jni_IBENative.o ibe.o -L$(LDFLAGS) -lgmp -lpbc
 
 hamaster_gradesign_ibe_jni_IBENative.o:
-	$(CC) $(dbg) -fPIC -c hamaster_gradesign_ibe_jni_IBENative.c -I$(JNIINCLUDE)
+	$(CC) $(dbg) -fPIC -c hamaster_gradesign_ibe_jni_IBENative.c $(JNIINCLUDE)
 
 # compile shared library for linking with other C programmes.
 sharedlibrary: ibe.o
