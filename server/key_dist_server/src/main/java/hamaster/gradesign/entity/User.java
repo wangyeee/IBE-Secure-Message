@@ -152,12 +152,12 @@ public class User implements Serializable, Cloneable {
         int result = 1;
         result = prime * result + ((email == null) ? 0 : email.hashCode());
         result = prime * result
-                + ((password == null) ? 0 : password.hashCode());
+                 + ((password == null) ? 0 : password.hashCode());
         result = prime * result + ((regDate == null) ? 0 : regDate.hashCode());
         result = prime * result + ((status == null) ? 0 : status.hashCode());
         result = prime * result + ((userId == null) ? 0 : userId.hashCode());
         result = prime * result
-                + ((username == null) ? 0 : username.hashCode());
+                 + ((username == null) ? 0 : username.hashCode());
         return result;
     }
 
@@ -214,7 +214,7 @@ public class User implements Serializable, Cloneable {
     @Override
     public String toString() {
         return "User [userId=" + userId + ", username=" + username + ", email="
-                + email + ", password=" + password + ", regDate=" + regDate
-                + ", status=" + status + "]";
+               + email + ", password=" + password + ", regDate=" + regDate
+               + ", status=" + status + "]";
     }
 }

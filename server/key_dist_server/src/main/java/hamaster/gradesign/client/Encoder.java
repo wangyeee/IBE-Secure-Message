@@ -2,9 +2,9 @@ package hamaster.gradesign.client;
 
 public interface Encoder {
 
-	String encode(byte[] data);
+    String encode(byte[] data);
 
-	byte[] decode(String code);
+    byte[] decode(String code);
 
-	String name();
+    String name();
 }

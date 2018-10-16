@@ -1,43 +1,34 @@
 package hamaster.gradesign.daemon;
 
-import hamaster.gradesign.mail.IBEMailDaemon;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
+import hamaster.gradesign.mail.IBEMailDaemon;
 
 /**
  * 执行web容器启动时的初始化操作
  * @author <a href="mailto:wangyeee@gmail.com">Wang Ye</a>
  */
-@WebListener
-public class Init implements ServletContextListener {
+@Component
+public class Init {
 
-    public Init() {
-    }
+    @EventListener
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        EJBClient system = EJBClient.getInstance();
+        system.init();
+        Runnable target = system.getBean("ibeRequestHandlerDaemon", IBERequestHandlerDaemon.class);
+        if (target != null) {
+            Thread requestDaemon = new Thread(target);
+            requestDaemon.setName("[IBERequestHandlerDaemon]");
+            requestDaemon.start();
+        }
 
-	/*
-	 * (non-Javadoc)
-	 * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
-	 */
-    public void contextInitialized(ServletContextEvent e) {
-    	EJBClient system = EJBClient.getInstance();
-    	system.init();
-    	Runnable target = system.getBean("ibeRequestHandlerDaemon", IBERequestHandlerDaemon.class);
-    	Thread requestDaemon = new Thread(target);
-    	requestDaemon.setName("[IBERequestHandlerDaemon]");
-    	requestDaemon.start();
-    	
-    	Runnable mTarget = system.getBean("mailDaemon", IBEMailDaemon.class);
-    	Thread mailDaemon = new Thread(mTarget);
-    	mailDaemon.setName("[IBEMailDaemon]");
-    	mailDaemon.start();
-    }
-
-	/*
-	 * (non-Javadoc)
-	 * @see javax.servlet.ServletContextListener#contextDestroyed(javax.servlet.ServletContextEvent)
-	 */
-    public void contextDestroyed(ServletContextEvent e) {
+        Runnable mTarget = system.getBean("mailDaemon", IBEMailDaemon.class);
+        if (mTarget != null) {
+            Thread mailDaemon = new Thread(mTarget);
+            mailDaemon.setName("[IBEMailDaemon]");
+            mailDaemon.start();
+        }
     }
 }

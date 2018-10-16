@@ -259,9 +259,9 @@ public class IDRequest implements Serializable, Cloneable {
     @Override
     public String toString() {
         return "IDRequest [requestId=" + requestId + ", applicant=" + applicant
-                + ", identityString=" + identityString + ", password="
-                + password + ", ibeSystemId=" + ibeSystemId
-                + ", applicationDate=" + applicationDate + ", status=" + status
-                + "]";
+               + ", identityString=" + identityString + ", password="
+               + password + ", ibeSystemId=" + ibeSystemId
+               + ", applicationDate=" + applicationDate + ", status=" + status
+               + "]";
     }
 }

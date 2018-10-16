@@ -20,6 +20,7 @@ public final class Hash {
      * @param str 要计算的字符串
      * @return MD5摘要
      */
+    @Deprecated
     public final static byte[] md5(String str) {
         return digest(str, "MD5");
     }
@@ -29,6 +30,7 @@ public final class Hash {
      * @param str 要计算的字符串
      * @return SHA-1摘要
      */
+    @Deprecated
     public final static byte[] sha1(String str) {
         return digest(str, "SHA-1");
     }
@@ -56,6 +58,7 @@ public final class Hash {
      * @param bytes 要计算的字节数组
      * @return MD5摘要
      */
+    @Deprecated
     public final static byte[] md5(byte[] bytes) {
         return digest(bytes, "MD5");
     }
@@ -65,6 +68,7 @@ public final class Hash {
      * @param bytes 要计算的字节数组
      * @return SHA-1摘要
      */
+    @Deprecated
     public final static byte[] sha1(byte[] bytes) {
         return digest(bytes, "SHA-1");
     }
@@ -113,7 +117,7 @@ public final class Hash {
      * @return 文件的SHA-256摘要
      * @throws IOException IO异常 如文件不存在
      */
-    public final static byte[] sha256(File file) throws IOException {
+    public final static byte[] sha256_(File file) throws IOException {
         return digest(new FileInputStream(file), file.length(), "SHA-256");
     }
 
