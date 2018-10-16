@@ -1,7 +1,10 @@
 package hamaster.gradesign.client;
 
+import org.springframework.stereotype.Component;
+
 import hamaster.gradesign.ibe.util.Hex;
 
+@Component("hexEncoder")
 public class HexEncoder implements Encoder {
 
     public HexEncoder() {

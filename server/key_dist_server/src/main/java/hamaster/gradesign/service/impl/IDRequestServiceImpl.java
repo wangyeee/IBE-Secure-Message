@@ -15,6 +15,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.object.BatchSqlUpdate;
+import org.springframework.stereotype.Service;
 
 import hamaster.gradesgin.util.Hash;
 import hamaster.gradesign.IBECSR;
@@ -24,6 +25,7 @@ import hamaster.gradesign.entity.User;
 import hamaster.gradesign.ibe.util.Hex;
 import hamaster.gradesign.service.IDRequestService;
 
+@Service
 public class IDRequestServiceImpl implements IDRequestService {
 
     private IDRequestDAO idRequestRepo;
@@ -71,6 +73,7 @@ public class IDRequestServiceImpl implements IDRequestService {
         for (String id : results.keySet()) {
             sql.update(id, results.get(id));
         }
+        sql.flush();
     }
 
     @Override

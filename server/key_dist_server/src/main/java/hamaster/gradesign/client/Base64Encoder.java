@@ -16,6 +16,8 @@
 
 package hamaster.gradesign.client;
 
+import org.springframework.stereotype.Component;
+
 /**
  * A Base64 encoder/decoder.
  *
@@ -293,6 +295,7 @@ class Base64Coder {
  *
  * @author wang
  */
+@Component("base64Encoder")
 public class Base64Encoder implements Encoder {
 
     public Base64Encoder() {

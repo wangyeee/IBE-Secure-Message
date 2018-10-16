@@ -49,6 +49,5 @@ public class SecureByteArrayInputStream extends ByteArrayInputStream {
         } catch (Throwable t) {
             throw new IOException(t);
         }
-        super.close();
     }
 }

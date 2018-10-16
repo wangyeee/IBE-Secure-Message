@@ -1,17 +1,10 @@
-package hamaster.gradesign.servlet;
+package hamaster.gradesign.controller;
 
-import hamaster.gradesgin.ibe.IBECipherText;
-import hamaster.gradesgin.ibe.IBEConstraints;
-import hamaster.gradesgin.ibe.IBEPlainText;
-import hamaster.gradesgin.ibe.core.IBEEngine;
-import hamaster.gradesgin.ibe.io.SecureByteArrayOutputStream;
-import hamaster.gradesign.daemon.EJBClient;
-import hamaster.gradesign.mgr.ClientManager;
+import static java.util.Objects.requireNonNull;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.InvalidAlgorithmParameterException;
@@ -25,73 +18,68 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-/**
- * 完成和客户端的交互 如分发密钥
- * @author <a href="mailto:wangyeee@gmail.com">Wang Ye</a>
- */
-@WebServlet("/client")
-public class ClientServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-    private ClientManager clientManager;
+import hamaster.gradesgin.ibe.IBECipherText;
+import hamaster.gradesgin.ibe.IBEConstraints;
+import hamaster.gradesgin.ibe.IBEPlainText;
+import hamaster.gradesgin.ibe.core.IBEEngine;
+import hamaster.gradesgin.ibe.io.SecureByteArrayInputStream;
+import hamaster.gradesgin.ibe.io.SecureByteArrayOutputStream;
+import hamaster.gradesign.client.Encoder;
+import hamaster.gradesign.daemon.EJBClient;
+import hamaster.gradesign.service.ClientService;
+import hamaster.gradesign.service.impl.ClientManager;
 
-    /*
-        * (non-Javadoc)
-        * @see HttpServlet#HttpServlet()
-        */
-    public ClientServlet() {
-    }
+@RestController
+public class ClientController {
 
-    /*
-     * (non-Javadoc)
-     * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
-     */
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-        this.clientManager = EJBClient.getInstance().getBean("clientManager", ClientManager.class);
+    private ClientService clientService;
+
+    private Encoder base64;
+
+    @Autowired
+    public ClientController(ClientService clientService, @Qualifier("base64Encoder") Encoder base64) {
+        this.clientService = requireNonNull(clientService);
+        this.base64 = requireNonNull(base64);
     }
 
     /**
      * 请求格式：<br>
-     * 操作名长度1字节<br>
      * 操作名最多256字节<br>
      * IBE加密后会话密钥384字节<br>
      * 请求数据（AES_256_CBC加密）若干字节
-     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    @PostMapping("/client")
+    public String processRequest(@RequestParam(value = "o", required = true) String operation,
+            @RequestParam(value = "k", required = true) String sessionKey,
+            @RequestParam(value = "p", required = true) String payload) {
         EJBClient system = EJBClient.getInstance();
-        OutputStream out = response.getOutputStream();
-        InputStream in = request.getInputStream();
-        int aLen = in.read();
-        byte[] aData = new byte[aLen]; // 读取请求的操作
-        if (aData.length != in.read(aData))
-            return;
-        String action = new String(aData);
-
-        byte[] encSessKey = new byte[IBEConstraints.IBE_G_SIZE * 3]; // 读取IBE加密后的会话密钥
-        if (encSessKey.length != in.read(encSessKey))
-            return;
+        sessionKey = sessionKey.replace('*', '+');
+        sessionKey = sessionKey.replace('-', '/');
+        payload = payload.replace('*', '+');
+        payload = payload.replace('-', '/');
+        byte[] encSessKey = base64.decode(sessionKey);
+        if (IBEConstraints.IBE_G_SIZE * 3 != encSessKey.length) {
+            // TODO handle error
+        }
         IBECipherText cipher = new IBECipherText();
         cipher.setUvw(encSessKey);
         cipher.setLength(48); // AES_256_CBC
         IBEPlainText plain = IBEEngine.decrypt(cipher, system.serverPrivateKey());
         byte[] sessKey = IBEPlainText.getSignificantBytes(plain);
-
-        // 解密数据
-        ByteArrayOutputStream buffer = new SecureByteArrayOutputStream(in.available() + 16);
         byte[] reqBody = null;
         byte[] key = new byte[32];
         byte[] iv = new byte[16];
         System.arraycopy(sessKey, 0, key, 0, 32);
         System.arraycopy(sessKey, 32, iv, 0, 16);
+        ByteArrayInputStream in = new SecureByteArrayInputStream(base64.decode(payload));
+        ByteArrayOutputStream buffer = new SecureByteArrayOutputStream(payload.length());
         try {
             int len;
             byte[] temp = new byte[16];
@@ -108,22 +96,27 @@ public class ClientServlet extends HttpServlet {
         } catch (NoSuchAlgorithmException e) {
         } catch (NoSuchPaddingException e) {
         } catch (InvalidKeyException e) {
-            throw new IOException(e);
+            //throw new IOException(e);
         } catch (InvalidAlgorithmParameterException e) {
         } catch (IllegalBlockSizeException e) {
-            throw new IOException(e);
+            //throw new IOException(e);
         } catch (BadPaddingException e) {
-            throw new IOException(e);
+            //throw new IOException(e);
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
             Arrays.fill(key, (byte) 0);
             Arrays.fill(iv, (byte) 0);
-            buffer.close();
+            try {
+                in.close();
+                buffer.close();
+            } catch (IOException e) {
+            }
         }
-
         byte[] resp = null; // 处理请求
         try {
-            Method method = clientManager.getClass().getMethod(action, byte[].class);
-            resp = (byte[]) method.invoke(clientManager, reqBody);
+            Method method = clientService.getClass().getMethod(operation, byte[].class);
+            resp = (byte[]) method.invoke(clientService, reqBody);
         } catch (SecurityException e) {
             e.printStackTrace();
         } catch (NoSuchMethodException e) {
@@ -142,10 +135,9 @@ public class ClientServlet extends HttpServlet {
             Arrays.fill(reqBody, (byte) 0);
             if (resp == null || resp.length < 1) {
                 // TODO 无法处理请求
-                return;
+                return null;
             }
         }
-
         System.arraycopy(sessKey, 0, key, 0, 32);
         System.arraycopy(sessKey, 32, iv, 0, 16);
         byte[] crypt0 = null; // 将处理结果加密并返回
@@ -154,23 +146,19 @@ public class ClientServlet extends HttpServlet {
             cipher0.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
             crypt0 = cipher0.doFinal(resp);
             // TODO 只返回了处理后的数据
-            out.write(crypt0);
-            out.flush();
+            return base64.encode(crypt0);
         } catch (NoSuchAlgorithmException e) {
         } catch (NoSuchPaddingException e) {
         } catch (InvalidKeyException e) {
-            throw new IOException(e);
         } catch (InvalidAlgorithmParameterException e) {
         } catch (IllegalBlockSizeException e) {
-            throw new IOException(e);
         } catch (BadPaddingException e) {
-            throw new IOException(e);
         } finally {
             Arrays.fill(key, (byte) 0);
             Arrays.fill(iv, (byte) 0);
             Arrays.fill(resp, (byte) 0);
             Arrays.fill(crypt0, (byte) 0);
-            out.close();
         }
+        return null;
     }
 }

@@ -5,6 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import hamaster.gradesgin.ibe.core.IBEEngine;
 import hamaster.gradesgin.ibs.IBSSignature;
 import hamaster.gradesgin.util.Hash;
@@ -17,17 +20,21 @@ import hamaster.gradesign.entity.IDRequest;
 import hamaster.gradesign.entity.User;
 import hamaster.gradesign.service.IDRequestService;
 
+@Component
 public class IBEMailParameterGenerator {
 
     public final static String CONTENT_KEY = "c";// content
     public final static String SIGNATURE_KEY = "s";//signature
 
-    final private static long oneweek = 604800000L; // 7天
+    final private static long oneweek = 604800000L;
 
     private UserDAO userDAO;
     private IDRequestService requestDAO;
 
-    public IBEMailParameterGenerator() {
+    @Autowired
+    public IBEMailParameterGenerator(UserDAO userDAO, IDRequestService requestDAO) {
+        this.userDAO = userDAO;
+        this.requestDAO = requestDAO;
     }
 
     public Properties sign(ActivationContent content) {
@@ -35,7 +42,7 @@ public class IBEMailParameterGenerator {
         byte[] bs = ActivationContent.toBytes(content);
         byte[] digest = Hash.sha512(bs);
         EJBClient client = EJBClient.getInstance();
-        IBSSignature signature = IBEEngine.sign(client.serverCertificate(), digest, "SHA-256");
+        IBSSignature signature = IBEEngine.sign(client.serverCertificate(), digest, "SHA-512");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             signature.writeExternal(out);
@@ -91,9 +98,5 @@ public class IBEMailParameterGenerator {
             return 0;// 成功
         }
         return 2;// 过期
-    }
-
-    public void setUserDAO(UserDAO userDAO) {
-        this.userDAO = userDAO;
     }
 }

@@ -15,6 +15,7 @@ public class Init {
 
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {
+        System.err.println("System start...");
         EJBClient system = EJBClient.getInstance();
         system.init();
         Runnable target = system.getBean("ibeRequestHandlerDaemon", IBERequestHandlerDaemon.class);
