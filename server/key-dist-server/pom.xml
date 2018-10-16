@@ -28,6 +28,11 @@
     </dependency>
     <dependency>
       <groupId>hamaster.gradesign.ibe</groupId>
+      <artifactId>jibe</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>hamaster.gradesign.ibe</groupId>
       <artifactId>key-gen-server</artifactId>
       <version>${project.version}</version>
     </dependency>
