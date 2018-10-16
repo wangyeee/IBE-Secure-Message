@@ -32,7 +32,7 @@ import hamaster.gradesgin.ibe.core.IBEEngine;
 import hamaster.gradesgin.ibe.io.SecureByteArrayInputStream;
 import hamaster.gradesgin.ibe.io.SecureByteArrayOutputStream;
 import hamaster.gradesign.client.Encoder;
-import hamaster.gradesign.daemon.EJBClient;
+import hamaster.gradesign.daemon.KeyGenClient;
 import hamaster.gradesign.service.ClientService;
 import hamaster.gradesign.service.impl.ClientManager;
 
@@ -43,10 +43,13 @@ public class ClientController {
 
     private Encoder base64;
 
+    private KeyGenClient system;
+
     @Autowired
-    public ClientController(ClientService clientService, @Qualifier("base64Encoder") Encoder base64) {
+    public ClientController(ClientService clientService, @Qualifier("base64Encoder") Encoder base64, KeyGenClient system) {
         this.clientService = requireNonNull(clientService);
         this.base64 = requireNonNull(base64);
+        this.system = requireNonNull(system);
     }
 
     /**
@@ -59,7 +62,6 @@ public class ClientController {
     public String processRequest(@RequestParam(value = "o", required = true) String operation,
             @RequestParam(value = "k", required = true) String sessionKey,
             @RequestParam(value = "p", required = true) String payload) {
-        EJBClient system = EJBClient.getInstance();
         sessionKey = sessionKey.replace('*', '+');
         sessionKey = sessionKey.replace('-', '/');
         payload = payload.replace('*', '+');

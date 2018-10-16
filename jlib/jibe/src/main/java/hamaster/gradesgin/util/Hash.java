@@ -58,7 +58,8 @@ public final class Hash {
      * @param bytes 要计算的字节数组
      * @return MD5摘要
      */
-    @Deprecated
+    // There is no Deprecated annotation as this method is used to generate 16 bytes
+    // array from data of arbitrary length
     public final static byte[] md5(byte[] bytes) {
         return digest(bytes, "MD5");
     }

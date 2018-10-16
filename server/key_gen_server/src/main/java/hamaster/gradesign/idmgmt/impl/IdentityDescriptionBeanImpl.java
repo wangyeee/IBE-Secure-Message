@@ -119,13 +119,13 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
             String userPassword, Integer systemId, Date validAfter, long period) {
         IdentityDescription id = new IdentityDescription();
         IBESystemEntity system = sysRepo.getOne(systemId);
-        String sha1 = Hex.hex(Hash.sha1(secureKeyIO.getSystemAccessPassword(systemId)));
-        if (!system.getSystemKeyHash().equalsIgnoreCase(sha1)) {
+        String sha512 = Hex.hex(Hash.sha512(secureKeyIO.getSystemAccessPassword(systemId)));
+        if (!system.getSystemKeyHash().equalsIgnoreCase(sha512)) {
             return null;
         }
         byte[] keyIV0 = new byte[SecureConstraints.IV_LENGTH_IN_BYTES + SecureConstraints.KEY_LENGTH_IN_BYTES];
         byte[] key0 = Hash.sha256(secureKeyIO.getSystemAccessPassword(systemId));
-        byte[] iv0 = Hash.md5(secureKeyIO.getSystemAccessPassword(systemId));
+        byte[] iv0 = Hash.md5(secureKeyIO.getSystemAccessPassword(systemId).getBytes());
         System.arraycopy(key0, 0, keyIV0, 0, key0.length);
         System.arraycopy(iv0, 0, keyIV0, key0.length, iv0.length);
     

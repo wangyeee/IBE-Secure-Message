@@ -8,12 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Component;
 
 import hamaster.gradesign.dao.UserDAO;
 import hamaster.gradesign.entity.IDRequest;
 import hamaster.gradesign.entity.User;
 import hamaster.gradesign.service.IDRequestService;
 
+@Component("ibeMailDaemon")
 public class IBEMailDaemon implements Runnable {
 
     private Logger logger = LoggerFactory.getLogger(getClass());

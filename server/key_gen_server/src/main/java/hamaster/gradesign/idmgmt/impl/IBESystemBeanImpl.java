@@ -46,7 +46,7 @@ public class IBESystemBeanImpl implements IBESystemBean {
 
         byte[] keyIV = new byte[SecureConstraints.IV_LENGTH_IN_BYTES + SecureConstraints.KEY_LENGTH_IN_BYTES];
         byte[] key = Hash.sha256(secureKeyIO.getSystemAccessPassword(0));
-        byte[] iv = Hash.md5(secureKeyIO.getSystemAccessPassword(0));
+        byte[] iv = Hash.md5(secureKeyIO.getSystemAccessPassword(0).getBytes());
         System.arraycopy(key, 0, keyIV, 0, key.length);
         System.arraycopy(iv, 0, keyIV, key.length, iv.length);
         system.setCryptionKeyAndIV(keyIV);
@@ -56,7 +56,7 @@ public class IBESystemBeanImpl implements IBESystemBean {
         IBESystemEntity entity = new IBESystemEntity();
         entity.setSystem(system);
         entity.setSystemOwner(owner);
-        entity.setSystemKeyHash(Hex.hex(Hash.sha1(secureKeyIO.getSystemAccessPassword(0))));
+        entity.setSystemKeyHash(Hex.hex(Hash.sha512(secureKeyIO.getSystemAccessPassword(0))));
         repo.save(entity);
     }
 

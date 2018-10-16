@@ -14,11 +14,13 @@ import hamaster.gradesgin.util.Hash;
 import hamaster.gradesign.IBECSR;
 import hamaster.gradesign.client.Base64Encoder;
 import hamaster.gradesign.client.Encoder;
-import hamaster.gradesign.daemon.EJBClient;
+import hamaster.gradesign.daemon.KeyGenClient;
 import hamaster.gradesign.dao.UserDAO;
 import hamaster.gradesign.entity.IDRequest;
 import hamaster.gradesign.entity.User;
 import hamaster.gradesign.service.IDRequestService;
+
+import static java.util.Objects.requireNonNull;
 
 @Component
 public class IBEMailParameterGenerator {
@@ -30,19 +32,20 @@ public class IBEMailParameterGenerator {
 
     private UserDAO userDAO;
     private IDRequestService requestDAO;
+    private KeyGenClient system;
 
     @Autowired
-    public IBEMailParameterGenerator(UserDAO userDAO, IDRequestService requestDAO) {
-        this.userDAO = userDAO;
-        this.requestDAO = requestDAO;
+    public IBEMailParameterGenerator(UserDAO userDAO, IDRequestService requestDAO, KeyGenClient system) {
+        this.userDAO = requireNonNull(userDAO);
+        this.requestDAO = requireNonNull(requestDAO);
+        this.system = requireNonNull(system);
     }
 
     public Properties sign(ActivationContent content) {
         Properties props = new Properties();
         byte[] bs = ActivationContent.toBytes(content);
         byte[] digest = Hash.sha512(bs);
-        EJBClient client = EJBClient.getInstance();
-        IBSSignature signature = IBEEngine.sign(client.serverCertificate(), digest, "SHA-512");
+        IBSSignature signature = IBEEngine.sign(system.serverCertificate(), digest, "SHA-512");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             signature.writeExternal(out);

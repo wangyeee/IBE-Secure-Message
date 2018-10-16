@@ -18,7 +18,6 @@ import hamaster.gradesgin.ibe.io.SecureByteArrayOutputStream;
 import hamaster.gradesgin.util.Hash;
 import hamaster.gradesign.IBECSR;
 import hamaster.gradesign.IdentityDescription;
-import hamaster.gradesign.daemon.EJBClient;
 import hamaster.gradesign.entity.IDRequest;
 import hamaster.gradesign.entity.IdentityDescriptionEntity;
 import hamaster.gradesign.entity.User;
@@ -292,7 +291,7 @@ public class ClientManager implements ClientService {
             user.setRegDate(regDate);
             user.setStatus(User.USER_REG);
 
-            String salt = EJBClient.util.format(regDate);
+            String salt = User.formatDate(regDate);
             byte[] hash = Hash.sha512(new StringBuilder(password).append(salt).toString());
             user.setPassword(Hex.hex(hash));
 

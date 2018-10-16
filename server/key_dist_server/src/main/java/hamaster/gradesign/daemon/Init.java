@@ -1,10 +1,12 @@
 package hamaster.gradesign.daemon;
 
+import static java.util.Objects.requireNonNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
-import hamaster.gradesign.mail.IBEMailDaemon;
 
 /**
  * 执行web容器启动时的初始化操作
@@ -13,23 +15,26 @@ import hamaster.gradesign.mail.IBEMailDaemon;
 @Component
 public class Init {
 
+    private KeyGenClient system;
+    private Runnable ibeRequestHandlerDaemon;
+    private Runnable mailDaemon;
+
+    @Autowired
+    public Init(KeyGenClient system, @Qualifier("ibeRequestHandlerDaemon") Runnable ibeRequestHandlerDaemon, @Qualifier("ibeMailDaemon") Runnable mailDaemon) {
+        this.system = requireNonNull(system);
+        this.ibeRequestHandlerDaemon = requireNonNull(ibeRequestHandlerDaemon);
+        this.mailDaemon = requireNonNull(mailDaemon);
+    }
+
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        System.err.println("System start...");
-        EJBClient system = EJBClient.getInstance();
         system.init();
-        Runnable target = system.getBean("ibeRequestHandlerDaemon", IBERequestHandlerDaemon.class);
-        if (target != null) {
-            Thread requestDaemon = new Thread(target);
-            requestDaemon.setName("[IBERequestHandlerDaemon]");
-            requestDaemon.start();
-        }
+        Thread requestDaemon = new Thread(this.ibeRequestHandlerDaemon);
+        requestDaemon.setName("[IBERequestHandlerDaemon]");
+        requestDaemon.start();
 
-        Runnable mTarget = system.getBean("mailDaemon", IBEMailDaemon.class);
-        if (mTarget != null) {
-            Thread mailDaemon = new Thread(mTarget);
-            mailDaemon.setName("[IBEMailDaemon]");
-            mailDaemon.start();
-        }
+        Thread mailDaemon = new Thread(this.mailDaemon);
+        mailDaemon.setName("[IBEMailDaemon]");
+        mailDaemon.start();
     }
 }

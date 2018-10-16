@@ -1,18 +1,17 @@
 package hamaster.gradesign.service.impl;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import hamaster.gradesgin.util.Hash;
-import hamaster.gradesign.daemon.EJBClient;
 import hamaster.gradesign.dao.UserDAO;
 import hamaster.gradesign.entity.User;
 import hamaster.gradesign.ibe.util.Hex;
 import hamaster.gradesign.service.UserService;
-
-import static java.util.Objects.requireNonNull;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -28,7 +27,7 @@ public class UserServiceImpl implements UserService {
     public User login(String email, String password) {
         Optional<User> user = userRepo.findByEmail(email);
         if (user.isPresent()) {
-            String salt = EJBClient.util.format(user.get().getRegDate());
+            String salt = User.formatDate(user.get().getRegDate());
             byte[] hash = Hash.sha512(new StringBuilder(password).append(salt).toString());
             if (Hex.hex(hash).equalsIgnoreCase(user.get().getPassword()))
                 return user.get();

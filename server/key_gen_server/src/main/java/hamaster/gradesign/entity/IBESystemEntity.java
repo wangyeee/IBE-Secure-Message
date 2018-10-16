@@ -52,9 +52,9 @@ public class IBESystemEntity implements Serializable {
     private byte[] encryptedIBESystem;
 
     /**
-     * 系统访问密码的SHA-1摘要
+     * 系统访问密码的SHA-512摘要
      */
-    @Column(nullable = false, name = "SYSTEM_KEY", length = 40)
+    @Column(nullable = false, name = "SYSTEM_KEY", length = 1024)
     private String systemKeyHash;
 
     public IBESystemEntity() {

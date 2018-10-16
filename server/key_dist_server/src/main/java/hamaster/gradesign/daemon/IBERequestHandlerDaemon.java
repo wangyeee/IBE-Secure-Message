@@ -9,12 +9,14 @@ import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import hamaster.gradesign.IBECSR;
 import hamaster.gradesign.entity.IDRequest;
 import hamaster.gradesign.idmgmt.IdentityDescriptionBean;
 import hamaster.gradesign.service.IDRequestService;
 
+@Component("ibeRequestHandlerDaemon")
 public class IBERequestHandlerDaemon implements Runnable {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
