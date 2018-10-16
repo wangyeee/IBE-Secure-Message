@@ -93,6 +93,8 @@ public final class EJBClient {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		} finally {
+		    capsule.close();
 		}
 		serverPrivateKey = id == null ? null : id.getPrivateKey();
 		serverCertificate = id == null ? null : id.getCertificate();

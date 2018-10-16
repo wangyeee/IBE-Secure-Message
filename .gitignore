@@ -32,3 +32,7 @@ jlib/.settings/
 server/key_gen_server/.classpath
 server/key_gen_server/.project
 server/key_gen_server/.settings/
+
+server/key_dist_server/.classpath
+server/key_dist_server/.project
+server/key_dist_server/.settings/
