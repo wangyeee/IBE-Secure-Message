@@ -22,6 +22,16 @@
 
   <dependencies>
     <dependency>
+      <groupId>hamaster.gradesign.ibe</groupId>
+      <artifactId>ibejnilib</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>hamaster.gradesign.ibe</groupId>
+      <artifactId>key-gen-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
