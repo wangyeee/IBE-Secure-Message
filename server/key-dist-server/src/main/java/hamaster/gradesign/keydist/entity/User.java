@@ -59,9 +59,9 @@ public class User implements Serializable, Cloneable {
     private String email;
 
     /**
-     * 用户密码的SHA-1摘要
+     * 用户密码的SHA-512摘要
      */
-    @Column(nullable = false, name = "PASSWORD", length = 40)
+    @Column(nullable = false, name = "PASSWORD")
     private String password;
 
     /**

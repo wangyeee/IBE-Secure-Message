@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import hamaster.gradesgin.ibe.IBEConstraints;
 import hamaster.gradesgin.ibe.io.SecureByteArrayInputStream;
 import hamaster.gradesgin.ibe.io.SecureByteArrayOutputStream;
-import hamaster.gradesgin.util.Hash;
 import hamaster.gradesgin.util.Hex;
 import hamaster.gradesign.keydist.entity.IDRequest;
 import hamaster.gradesign.keydist.entity.User;
@@ -26,12 +25,9 @@ import hamaster.gradesign.keygen.IBECSR;
 import hamaster.gradesign.keygen.IdentityDescription;
 import hamaster.gradesign.keygen.entity.IdentityDescriptionEntity;
 import hamaster.gradesign.keygen.idmgmt.IBESystemBean;
-import hamaster.gradesign.keygen.idmgmt.IdentityDescriptionBean;
 
 @Service
 public class ClientManager implements ClientService {
-
-    private IdentityDescriptionBean identityDescriptionBean;
 
     private UserService userService;
 
@@ -127,7 +123,8 @@ public class ClientManager implements ClientService {
                 ret[0] = ERR_ID_THEFT;
                 return ret;
             }
-            IdentityDescriptionEntity ide = identityDescriptionBean.get(id);
+            IdentityDescriptionEntity ide = identityDescriptionBeanGet(id);
+            // IdentityDescriptionEntity ide = identityDescriptionBean.get(id);
             IdentityDescription userId = ide.getIdentityDescription(idPassword.getBytes());
 
             byte[] idbs = userId.toByteArray();
@@ -144,6 +141,11 @@ public class ClientManager implements ClientService {
             } catch (IOException e) {
             }
         }
+    }
+
+    private IdentityDescriptionEntity identityDescriptionBeanGet(String id) {
+        // TODO call rest api
+        return null;
     }
 
     /**
@@ -291,11 +293,7 @@ public class ClientManager implements ClientService {
             user.setRegDate(regDate);
             user.setStatus(User.USER_REG);
 
-            String salt = User.formatDate(regDate);
-            byte[] hash = Hash.sha512(new StringBuilder(password).append(salt).toString());
-            user.setPassword(Hex.hex(hash));
-
-            userService.save(user);
+            userService.register(user, password);
             ret[0] = ERR_SUCCESS;
             return ret;
         } catch (IOException e) {

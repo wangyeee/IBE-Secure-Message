@@ -53,7 +53,7 @@ public class IDRequest implements Serializable, Cloneable {
     /**
      * 申请密码的摘要
      */
-    @Column(nullable = false, length = 40, name = "PASSWORD")
+    @Column(nullable = false, name = "PASSWORD")
     private String password;
 
     /**

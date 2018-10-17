@@ -42,7 +42,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void save(User user) {
-        userRepo.save(requireNonNull(user));
+    public void register(User user, String password) {
+        String salt = User.formatDate(user.getRegDate());
+        String hash = Hex.hex(Hash.sha512(new StringBuilder(password).append(salt).toString()));
+        user.setPassword(hash);
+        user.setStatus(User.USER_REG);
+        userRepo.save(user);
+    }
+
+    @Override
+    public boolean isUsernameExist(String username) {
+        Optional<User> user = userRepo.findByUsername(username);
+        return user.isPresent();
     }
 }

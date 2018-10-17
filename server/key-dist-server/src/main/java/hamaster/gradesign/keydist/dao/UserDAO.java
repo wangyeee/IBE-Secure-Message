@@ -27,4 +27,5 @@ public interface UserDAO extends JpaRepository<User, Integer> {
     List<User> listNewRegisteredUsers(Pageable page);
 
     Optional<User> findByEmail(String email);
+    Optional<User> findByUsername(String username);
 }

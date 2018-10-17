@@ -28,6 +28,8 @@ public interface IdentityDescriptionBean {
     @Async
     Future<Map<String, Integer>> generateIdentityDescriptions(List<IBECSR> requests);
 
+    IdentityDescriptionEntity generateSingleIdentityDescriptionEntity(IBECSR request);
+
     Map<String, Integer> generateIdentityDescriptionsSync(List<IBECSR> requests);
 
     /**

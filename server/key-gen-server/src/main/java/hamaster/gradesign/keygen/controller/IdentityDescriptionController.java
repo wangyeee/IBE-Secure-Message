@@ -34,6 +34,25 @@ public class IdentityDescriptionController {
         return CompletableFuture.completedFuture(identityDescriptionBean.generateIdentityDescriptionsSync(requests));
     }
 
+    @PostMapping("/singleid")
+    public SimpleRESTResponse singleIDRequest(IBECSR request) {
+        SimpleRESTResponse resp = new SimpleRESTResponse();
+        request = requireNonNull(request);
+        IdentityDescriptionEntity exist = identityDescriptionBean.get(request.getIdentityString());
+        if (exist != null) {
+            if (request.getIbeSystemId() == exist.getSystem().getSystemId()) {
+                resp.setResultCode(1);
+                resp.setMessage(String.format("Error: conflicting ID: %s for system: %d", request.getIdentityString(), request.getIbeSystemId()));
+                return resp;
+            }
+        }
+        IdentityDescriptionEntity newId = identityDescriptionBean.generateSingleIdentityDescriptionEntity(request);
+        resp.setResultCode(0);
+        resp.setMessage(String.format("Successfully generated ID for %s in system %s", request.getIdentityString(), newId.getSystem().getSystemOwner()));
+        resp.setPayload(newId);
+        return resp;
+    }
+
     @PostMapping("/genidsync")
     public Map<String, Integer> processIDGenerationSync(List<IBECSR> requests) {
         return identityDescriptionBean.generateIdentityDescriptionsSync(requests);

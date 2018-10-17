@@ -100,19 +100,16 @@ public class IBESystemEntity implements Serializable {
      */
     public IBESystem getSystem(byte[] cryptionKeyAndIV) {
         synchronized (this) {
-            IBESystem system;// = new IBESystem();
-//   system.setCryptionKeyAndIV(cryptionKeyAndIV);
+            IBESystem system;
             if (encryptedIBESystem == null)
                 return null;
             IBECapsule capsule = new IBECapsuleAESImpl();
             capsule.setKey(cryptionKeyAndIV);
             try {
                 ByteArrayInputStream bin = new ByteArrayInputStream(encryptedIBESystem);
-//    ObjectInputStream in = new ObjectInputStream(bin);
                 capsule.readExternal(bin);
                 system = (IBESystem) capsule.getDataAsObject();
                 system.setCryptionKeyAndIV(cryptionKeyAndIV);
-//    in.close();
                 bin.close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -132,16 +129,13 @@ public class IBESystemEntity implements Serializable {
             capsule.setKey(system.getCryptionKeyAndIV());
             capsule.protect(system);
             try {
-                //    ObjectOutputStream out = new ObjectOutputStream(bout);
                 capsule.writeExternal(bout);
-                //    out.flush();
                 bout.flush();
                 if (encryptedIBESystem != null)
                     MemoryUtil.fastSecureBuffers(encryptedIBESystem);
                 this.encryptedIBESystem = bout.toByteArray();
                 System.out.println("IBE System:");
                 System.out.println(Hex.hex(bout.toByteArray()));
-                // out.close();
                 bout.close();
             } catch (IOException e) {
                 return;

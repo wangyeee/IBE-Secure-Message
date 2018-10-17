@@ -14,5 +14,7 @@ public interface UserService {
 
     boolean isEmailExist(String email);
 
-    void save(User user);
+    boolean isUsernameExist(String username);
+
+    void register(User user, String password);
 }

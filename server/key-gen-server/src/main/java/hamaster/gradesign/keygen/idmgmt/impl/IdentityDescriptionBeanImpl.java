@@ -115,6 +115,18 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
     }
 
     @Override
+    public IdentityDescriptionEntity generateSingleIdentityDescriptionEntity(IBECSR csr) {
+        IdentityDescriptionEntity id = generateIdentityDescriptionForUser(
+                csr.getIdentityString(),
+                csr.getPassword(),
+                csr.getIbeSystemId(),
+                csr.getApplicationDate(),
+                csr.getPeriod());
+        idRepo.save(id);
+        return id;
+    }
+
+    @Override
     public IdentityDescriptionEntity changeEncryptionKeySync(Integer id, String oldKey, String newKey) {
         IdentityDescriptionEntity mod = idRepo.getOne(id);
         IdentityDescription data = mod.getIdentityDescription(oldKey.getBytes());
@@ -136,16 +148,16 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
         byte[] iv0 = Hash.md5(secureKeyIO.getSystemAccessPassword(systemId).getBytes());
         System.arraycopy(key0, 0, keyIV0, 0, key0.length);
         System.arraycopy(iv0, 0, keyIV0, key0.length, iv0.length);
-    
+
         IBESystem sys = system.getSystem(keyIV0);
-    
+
         // 声称私钥和签名证书
         IBEPrivateKey privateKey = IBEEngine.keygen(sys.getParameter(), owner);
         IBSCertificate certificate = IBEEngine.generateCertificate(owner, sys.getCertificate(), validAfter, period);
         id.setSystemPublicParameter(sys.getParameter().getPublicParameter());
         id.setPrivateKey(privateKey);
         id.setCertificate(certificate);
-    
+
         // 加密存储
         IdentityDescriptionEntity idCon = new IdentityDescriptionEntity();
         idCon.setIdOwner(owner);
