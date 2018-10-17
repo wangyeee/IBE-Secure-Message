@@ -18,6 +18,8 @@ public interface IdentityDescriptionBean {
      */
     IdentityDescriptionEntity get(String owner);
 
+    IdentityDescriptionEntity get(String owner, String systemID);
+
     /**
      * 批量为用户生成身份描述文件
      * @param requests 身份文件请求

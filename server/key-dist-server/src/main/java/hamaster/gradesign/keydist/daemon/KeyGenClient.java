@@ -1,9 +1,15 @@
 package hamaster.gradesign.keydist.daemon;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import hamaster.gradesgin.ibe.IBEPrivateKey;
 import hamaster.gradesgin.ibs.IBSCertificate;
@@ -11,15 +17,38 @@ import hamaster.gradesgin.util.Hex;
 import hamaster.gradesgin.util.IBECapsule;
 import hamaster.gradesgin.util.IBECapsuleAESImpl;
 import hamaster.gradesign.keygen.IdentityDescription;
+import hamaster.gradesign.keygen.SimpleRESTResponse;
 
-@Component
+@Service
 public class KeyGenClient {
 
+    @Value("${hamaster.gradesign.keydist.genserver}")
+    private String keyGenServereURL;
+
+    @Value("${hamaster.gradesign.keydist.system}")
+    private String systemIDStr;
+
+    private Integer currentSystemID;
     private IBSCertificate serverCertificate;
     private IBEPrivateKey serverPrivateKey;
 
+    private RestTemplate restTemplate;
+
+    @Autowired
+    public KeyGenClient(RestTemplateBuilder restTemplateBuilder) {
+        this.restTemplate = requireNonNull(restTemplateBuilder).build();
+        currentSystemID = -1;
+    }
+
     public void init() {
         // TODO connect to key generation server
+        SimpleRESTResponse resp = restTemplate.getForObject(String.format("%s/system/%s/number", keyGenServereURL, systemIDStr), SimpleRESTResponse.class);
+        if (resp.getResultCode() == 0) {
+            currentSystemID = (Integer) resp.getPayload();
+            System.out.println("Connected to keygen server, default system: " + currentSystemID);
+        } else {
+            System.err.println(resp);
+        }
     }
 
     public IBEPrivateKey serverPrivateKey() {
@@ -57,5 +86,13 @@ public class KeyGenClient {
         }
         serverPrivateKey = id == null ? null : id.getPrivateKey();
         serverCertificate = id == null ? null : id.getCertificate();
+    }
+
+    public Integer getCurrentSystemID() {
+        return currentSystemID;
+    }
+
+    public String getKeyGenServereURL() {
+        return keyGenServereURL;
     }
 }

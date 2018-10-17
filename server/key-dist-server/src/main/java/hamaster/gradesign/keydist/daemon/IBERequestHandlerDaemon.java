@@ -1,20 +1,23 @@
 package hamaster.gradesign.keydist.daemon;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import hamaster.gradesign.keydist.entity.IDRequest;
 import hamaster.gradesign.keydist.service.IDRequestService;
 import hamaster.gradesign.keygen.IBECSR;
-import hamaster.gradesign.keygen.idmgmt.IdentityDescriptionBean;
 
 @Component("ibeRequestHandlerDaemon")
 public class IBERequestHandlerDaemon implements Runnable {
@@ -25,27 +28,35 @@ public class IBERequestHandlerDaemon implements Runnable {
 
     private IDRequestService idRequestDAO;
 
-    private IdentityDescriptionBean identityDescriptionBean;
+    private RestTemplate restTemplate;
+
+    private KeyGenClient system;
 
     /**
      * 处理请求间隔 单位毫秒
      */
+    @Value("${hamaster.gradesign.keydist.req.interval:60000}")
     private long interval;
 
     /**
      * 每次处理的请求数量
      */
+    @Value("${hamaster.gradesign.keydist.req.idbat:50}")
     private int batchSize;
 
     private volatile boolean running;
 
-    public IBERequestHandlerDaemon() {
+    @Autowired
+    public IBERequestHandlerDaemon(RestTemplateBuilder restTemplateBuilder, IDRequestService idRequestDAO, KeyGenClient system) {
         running = true;
+        this.restTemplate = requireNonNull(restTemplateBuilder).build();
+        this.idRequestDAO = requireNonNull(idRequestDAO);
+        this.system = requireNonNull(system);
     }
 
     @Override
     public void run() {
-        logger.info("Daemod started at:" + new Date().toString());
+        logger.info("Daemon started at:" + new Date().toString());
         while (running) {
             try {
                 Thread.sleep(interval);
@@ -58,16 +69,15 @@ public class IBERequestHandlerDaemon implements Runnable {
                 IBECSR csr = convert(idRequest);
                 work.add(csr);
             }
-            Future<Map<String, Integer>> future = identityDescriptionBean.generateIdentityDescriptions(work);
-            try {
-                Map<String, Integer> results = future.get();
-                idRequestDAO.requestHandled(results);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
+            Map<String, Integer> results = generateIdentityDescriptions(work);
+            idRequestDAO.requestHandled(results);
         }
+        logger.info("Daemon extied at:" + new Date().toString());
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Integer> generateIdentityDescriptions(List<IBECSR> work) {
+        return (Map<String, Integer>) restTemplate.postForEntity(String.format("%s/genidsync", system.getKeyGenServereURL()), work, Map.class);
     }
 
     private IBECSR convert(IDRequest request) {
@@ -91,14 +101,6 @@ public class IBERequestHandlerDaemon implements Runnable {
 
     public void setInterval(long interval) {
         this.interval = interval;
-    }
-
-    public IdentityDescriptionBean getIdentityDescriptionBean() {
-        return identityDescriptionBean;
-    }
-
-    public void setIdentityDescriptionBean(IdentityDescriptionBean identityDescriptionBean) {
-        this.identityDescriptionBean = identityDescriptionBean;
     }
 
     public int getBatchSize() {

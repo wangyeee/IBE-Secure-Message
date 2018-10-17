@@ -66,6 +66,14 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
         return null;
     }
 
+    @Override
+    public IdentityDescriptionEntity get(String owner, String system) {
+        Optional<IdentityDescriptionEntity> id = idRepo.findOneByOwnerAndSystem(owner, system);
+        if (id.isPresent())
+            return id.get();
+        return null;
+    }
+
     /*
      * (non-Javadoc)
      * @see hamaster.gradesign.idmgmt.IdentityDescriptionBean#changeEncryptionKey(java.lang.Integer, java.lang.String, java.lang.String)
@@ -102,7 +110,7 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
                 map.put(csr.getIdentityString(), IBECSR.APPLICATION_ERROR);
             }
         }
-        IdentityDescriptionBeanImpl.this.idRepo.saveAll(objs);
+        idRepo.saveAll(objs);
         return map;
     }
 

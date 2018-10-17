@@ -6,6 +6,8 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
@@ -24,14 +26,26 @@ public class IBEMailDaemon implements Runnable {
     private JavaMailSender mailSender;
     private IDRequestService idRequestDAO;
     private UserDAO userDAO;
+
+    @Value("${hamaster.gradesign.keydist.mail.userbat:20}")
     private int userBatchSize;
+
+    @Value("${hamaster.gradesign.keydist.mail.idbat:50}")
     private int idBatchSize;
+
+    @Value("${hamaster.gradesign.keydist.mail.interval:60000}")
     private long interval;
 
     private volatile boolean running;
 
-    public IBEMailDaemon() {
+    @Autowired
+    public IBEMailDaemon(IBEMailParameterGenerator mailParameterGenerator, JavaMailSender mailSender,
+            IDRequestService idRequestDAO, UserDAO userDAO) {
         running = true;
+        this.mailParameterGenerator = mailParameterGenerator;
+        this.mailSender = mailSender;
+        this.idRequestDAO = idRequestDAO;
+        this.userDAO = userDAO;
     }
 
     @Override
@@ -45,6 +59,7 @@ public class IBEMailDaemon implements Runnable {
                 e.printStackTrace();
             }
         }
+        logger.info("IBE Mail Daemon exit at:" + new Date().toString());
     }
 
     public void stopRunning() {
@@ -106,43 +121,7 @@ public class IBEMailDaemon implements Runnable {
         mailSender.send(mails);
     }
 
-    public JavaMailSender getMailSender() {
-        return mailSender;
-    }
-
-    public void setMailSender(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
-
-    public void setUserDAO(UserDAO userDAO) {
-        this.userDAO = userDAO;
-    }
-
-    public int getUserBatchSize() {
-        return userBatchSize;
-    }
-
-    public void setUserBatchSize(int userBatchSize) {
-        this.userBatchSize = userBatchSize;
-    }
-
-    public int getIdBatchSize() {
-        return idBatchSize;
-    }
-
-    public void setIdBatchSize(int idBatchSize) {
-        this.idBatchSize = idBatchSize;
-    }
-
-    public long getInterval() {
-        return interval;
-    }
-
-    public void setInterval(long interval) {
-        this.interval = interval;
-    }
-
-    public void setMailParameterGenerator(IBEMailParameterGenerator mailParameterGenerator) {
-        this.mailParameterGenerator = mailParameterGenerator;
+    public void stopMailDaemon() {
+        running = false;
     }
 }
