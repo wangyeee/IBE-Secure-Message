@@ -17,7 +17,7 @@ import hamaster.gradesgin.ibe.IBEPrivateKey;
 import hamaster.gradesgin.ibe.IBEPublicParameter;
 import hamaster.gradesgin.ibe.IBESystemParameter;
 import hamaster.gradesgin.ibe.core.IBEEngine;
-import hamaster.gradesign.ibe.util.Hex;
+import hamaster.gradesgin.util.Hex;
 
 public class TestIBEEngine {
 

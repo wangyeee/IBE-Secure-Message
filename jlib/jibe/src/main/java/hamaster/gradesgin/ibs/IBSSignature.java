@@ -1,12 +1,9 @@
 package hamaster.gradesgin.ibs;
 
-import static hamaster.gradesign.ibe.util.Hex.bytesToInt;
-import static hamaster.gradesign.ibe.util.Hex.bytesToLong;
-import static hamaster.gradesign.ibe.util.Hex.intToByte;
-import static hamaster.gradesign.ibe.util.Hex.longToBytes;
-import hamaster.gradesgin.ibe.IBEConstraints;
-import hamaster.gradesgin.ibe.IBEPrivateKey;
-import hamaster.gradesgin.ibe.IBEPublicParameter;
+import static hamaster.gradesgin.util.Hex.bytesToInt;
+import static hamaster.gradesgin.util.Hex.bytesToLong;
+import static hamaster.gradesgin.util.Hex.intToByte;
+import static hamaster.gradesgin.util.Hex.longToBytes;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +11,10 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
+
+import hamaster.gradesgin.ibe.IBEConstraints;
+import hamaster.gradesgin.ibe.IBEPrivateKey;
+import hamaster.gradesgin.ibe.IBEPublicParameter;
 
 /**
  * IBS数字签名

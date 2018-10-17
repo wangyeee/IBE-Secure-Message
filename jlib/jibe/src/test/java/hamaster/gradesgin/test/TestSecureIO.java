@@ -8,9 +8,9 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
+import hamaster.gradesgin.util.Hex;
 import hamaster.gradesgin.util.IBECapsule;
 import hamaster.gradesgin.util.IBECapsuleAESImpl;
-import hamaster.gradesign.ibe.util.Hex;
 
 public class TestSecureIO {
 

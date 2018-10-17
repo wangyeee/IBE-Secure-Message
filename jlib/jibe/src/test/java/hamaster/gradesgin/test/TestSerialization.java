@@ -21,7 +21,7 @@ import hamaster.gradesgin.ibe.IBESystemParameter;
 import hamaster.gradesgin.ibe.core.IBEEngine;
 import hamaster.gradesgin.ibs.IBSCertificate;
 import hamaster.gradesgin.ibs.IBSSignature;
-import hamaster.gradesign.ibe.util.Hex;
+import hamaster.gradesgin.util.Hex;
 
 public class TestSerialization {
 

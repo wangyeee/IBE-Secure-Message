@@ -1,7 +1,7 @@
 package hamaster.gradesgin.util;
 
-import static hamaster.gradesign.ibe.util.Hex.bytesToInt;
-import static hamaster.gradesign.ibe.util.Hex.intToByte;
+import static hamaster.gradesgin.util.Hex.bytesToInt;
+import static hamaster.gradesgin.util.Hex.intToByte;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

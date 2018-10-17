@@ -1,14 +1,15 @@
 package hamaster.gradesgin.ibe;
 
-import static hamaster.gradesign.ibe.util.Hex.bytesToInt;
-import static hamaster.gradesign.ibe.util.Hex.intToByte;
-import hamaster.gradesgin.util.MemoryUtil;
+import static hamaster.gradesgin.util.Hex.bytesToInt;
+import static hamaster.gradesgin.util.Hex.intToByte;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+
+import hamaster.gradesgin.util.MemoryUtil;
 
 /**
  * IBE系统公共参数
