@@ -82,7 +82,7 @@ public class IdentityDescriptionController {
         IBECSR csr = new IBECSR();
         csr.setIbeSystemId(1);
         csr.setIdentityString("id string");
-        csr.setPassword("some password");
+        csr.setPassword("some password".getBytes());
         csr.setPeriod(100000000000L);
         csr.setApplicationDate(new Date());
         return csr;

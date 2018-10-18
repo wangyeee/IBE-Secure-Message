@@ -2,6 +2,8 @@ package hamaster.gradesign.keygen.idmgmt.impl;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -18,6 +20,8 @@ import org.springframework.data.domain.Example;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
+import hamaster.gradesgin.ibe.IBECipherText;
+import hamaster.gradesgin.ibe.IBEPlainText;
 import hamaster.gradesgin.ibe.IBEPrivateKey;
 import hamaster.gradesgin.ibe.core.IBEEngine;
 import hamaster.gradesgin.ibs.IBSCertificate;
@@ -29,6 +33,7 @@ import hamaster.gradesign.keygen.IdentityDescription;
 import hamaster.gradesign.keygen.SecureConstraints;
 import hamaster.gradesign.keygen.entity.IBESystemEntity;
 import hamaster.gradesign.keygen.entity.IdentityDescriptionEntity;
+import hamaster.gradesign.keygen.idmgmt.IBESystemBean;
 import hamaster.gradesign.keygen.idmgmt.IdentityDescriptionBean;
 import hamaster.gradesign.keygen.key.SecureKeyIO;
 import hamaster.gradesign.keygen.repo.IBESystemRepository;
@@ -43,13 +48,15 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
     private IdentityDescriptionRepository idRepo;
     private IBESystemRepository sysRepo;
     private SecureKeyIO secureKeyIO;
+    private IBESystemBean systemBean;
 
     @Autowired
     public IdentityDescriptionBeanImpl(IdentityDescriptionRepository repo,
-            IBESystemRepository sysRepo, SecureKeyIO secureKeyIO) {
+            IBESystemRepository sysRepo, SecureKeyIO secureKeyIO, IBESystemBean systemBean) {
         this.idRepo = requireNonNull(repo);
         this.sysRepo = requireNonNull(sysRepo);
-        this.secureKeyIO = requireNonNull(  secureKeyIO);
+        this.secureKeyIO = requireNonNull(secureKeyIO);
+        this.systemBean = requireNonNull(systemBean);
     }
 
     /*
@@ -136,7 +143,7 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
     }
 
     private IdentityDescriptionEntity generateIdentityDescriptionForUser(String owner,
-            String userPassword, Integer systemId, Date validAfter, long period) {
+            byte[] userPassword, Integer systemId, Date validAfter, long period) {
         IdentityDescription id = new IdentityDescription();
         IBESystemEntity system = sysRepo.getOne(systemId);
         String sha512 = Hex.hex(Hash.sha512(secureKeyIO.getSystemAccessPassword(systemId)));
@@ -162,7 +169,32 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
         IdentityDescriptionEntity idCon = new IdentityDescriptionEntity();
         idCon.setIdOwner(owner);
         idCon.setSystem(system);
-        idCon.setIdentityDescription(id, userPassword.getBytes());
+        idCon.setIdentityDescription(id, decryptSessionKeyWithServerKey(userPassword, systemBean.getPrivateKeyForSystem(systemId)));
         return idCon;
+    }
+
+    /**
+     * Any session key (AES 256) sent to the key generation server is encrypted
+     * with the server private IBE key, this method decrypts the key contents.<br>
+     * @param sessionKey The encrypted session key
+     * @param serverPrivateKey the IBE private key for the given system
+     * @return the session key in plain text
+     */
+    private byte[] decryptSessionKeyWithServerKey(byte[] sessionKey, IBEPrivateKey serverPrivateKey) {
+        ByteArrayInputStream in = new ByteArrayInputStream(sessionKey);
+        IBECipherText cipher = new IBECipherText();
+        try {
+            cipher.readExternal(in);
+        } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+            }
+        }
+        IBEPlainText plain = IBEEngine.decrypt(cipher, serverPrivateKey);
+        return IBEPlainText.getSignificantBytes(plain);
     }
 }

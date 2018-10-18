@@ -28,7 +28,6 @@ public class IBEPlainText implements IBEConstraints, Serializable {
      */
     private int length;
 
-// TODO protected
     public IBEPlainText() {
     }
 

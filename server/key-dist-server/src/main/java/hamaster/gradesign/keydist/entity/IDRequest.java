@@ -3,6 +3,7 @@ package hamaster.gradesign.keydist.entity;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -51,10 +52,15 @@ public class IDRequest implements Serializable, Cloneable {
     private String identityString;
 
     /**
-     * 申请密码的摘要
+     * The SHA512 hash of the password used to encrypt identity description.
+     * Its plain text form will be encrypted with key generation server
+     * public key and stored to passwordToKeyGen.
      */
     @Column(nullable = false, name = "PASSWORD")
     private String password;
+
+    @Column(nullable = false, name = "PASSWORD_KEYGEN")
+    private byte[] passwordToKeyGen;
 
     /**
      * 所使用的系统
@@ -166,6 +172,14 @@ public class IDRequest implements Serializable, Cloneable {
         this.status = status;
     }
 
+    public void setPasswordToKeyGen(byte[] passwordToKeyGen) {
+        this.passwordToKeyGen = passwordToKeyGen;
+    }
+
+    public byte[] getPasswordToKeyGen() {
+        return this.passwordToKeyGen;
+    }
+
     /*
      * (non-Javadoc)
      * @see java.lang.Object#clone()
@@ -180,13 +194,10 @@ public class IDRequest implements Serializable, Cloneable {
         copy.ibeSystemId = this.ibeSystemId;
         copy.applicationDate = this.applicationDate;
         copy.status = this.status;
+        copy.passwordToKeyGen = this.passwordToKeyGen;
         return copy;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -196,22 +207,19 @@ public class IDRequest implements Serializable, Cloneable {
         result = prime * result + ((ibeSystemId == null) ? 0 : ibeSystemId.hashCode());
         result = prime * result + ((identityString == null) ? 0 : identityString.hashCode());
         result = prime * result + ((password == null) ? 0 : password.hashCode());
+        result = prime * result + Arrays.hashCode(passwordToKeyGen);
         result = prime * result + ((requestId == null) ? 0 : requestId.hashCode());
         result = prime * result + ((status == null) ? 0 : status.hashCode());
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
         if (obj == null)
             return false;
-        if (!(obj instanceof IDRequest))
+        if (getClass() != obj.getClass())
             return false;
         IDRequest other = (IDRequest) obj;
         if (applicant == null) {
@@ -239,6 +247,8 @@ public class IDRequest implements Serializable, Cloneable {
                 return false;
         } else if (!password.equals(other.password))
             return false;
+        if (!Arrays.equals(passwordToKeyGen, other.passwordToKeyGen))
+            return false;
         if (requestId == null) {
             if (other.requestId != null)
                 return false;
@@ -252,16 +262,10 @@ public class IDRequest implements Serializable, Cloneable {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
-        return "IDRequest [requestId=" + requestId + ", applicant=" + applicant
-               + ", identityString=" + identityString + ", password="
-               + password + ", ibeSystemId=" + ibeSystemId
-               + ", applicationDate=" + applicationDate + ", status=" + status
-               + "]";
+        return "IDRequest [requestId=" + requestId + ", applicant=" + applicant + ", identityString=" + identityString
+                + ", password=" + password + ", passwordToKeyGen=" + Arrays.toString(passwordToKeyGen)
+                + ", ibeSystemId=" + ibeSystemId + ", applicationDate=" + applicationDate + ", status=" + status + "]";
     }
 }

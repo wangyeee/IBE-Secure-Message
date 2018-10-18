@@ -1,6 +1,7 @@
 package hamaster.gradesign.keygen;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 
 public class IBECSR implements Serializable {
@@ -25,9 +26,10 @@ public class IBECSR implements Serializable {
     private String identityString;
 
     /**
-     * 申请密码的摘要
+     * The IBE encrypted application password.
+     * This password will be used to protect generated identity description.
      */
-    private String password;
+    private byte[] password;
 
     /**
      * 所使用的系统
@@ -63,14 +65,6 @@ public class IBECSR implements Serializable {
         this.identityString = identityString;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public Integer getIbeSystemId() {
         return ibeSystemId;
     }
@@ -95,6 +89,14 @@ public class IBECSR implements Serializable {
         this.period = period;
     }
 
+    public byte[] getPassword() {
+        return password;
+    }
+
+    public void setPassword(byte[] password) {
+        this.password = password;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -102,7 +104,7 @@ public class IBECSR implements Serializable {
         result = prime * result + ((applicationDate == null) ? 0 : applicationDate.hashCode());
         result = prime * result + ((ibeSystemId == null) ? 0 : ibeSystemId.hashCode());
         result = prime * result + ((identityString == null) ? 0 : identityString.hashCode());
-        result = prime * result + ((password == null) ? 0 : password.hashCode());
+        result = prime * result + Arrays.hashCode(password);
         result = prime * result + (int) (period ^ (period >>> 32));
         result = prime * result + ((requestId == null) ? 0 : requestId.hashCode());
         return result;
@@ -132,10 +134,7 @@ public class IBECSR implements Serializable {
                 return false;
         } else if (!identityString.equals(other.identityString))
             return false;
-        if (password == null) {
-            if (other.password != null)
-                return false;
-        } else if (!password.equals(other.password))
+        if (!Arrays.equals(password, other.password))
             return false;
         if (period != other.period)
             return false;
@@ -149,7 +148,8 @@ public class IBECSR implements Serializable {
 
     @Override
     public String toString() {
-        return "IBECSR [requestId=" + requestId + ", identityString=" + identityString + ", password=" + password
-                + ", ibeSystemId=" + ibeSystemId + ", applicationDate=" + applicationDate + ", period=" + period + "]";
+        return "IBECSR [requestId=" + requestId + ", identityString=" + identityString + ", password="
+                + Arrays.toString(password) + ", ibeSystemId=" + ibeSystemId + ", applicationDate=" + applicationDate
+                + ", period=" + period + "]";
     }
 }

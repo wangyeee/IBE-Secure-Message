@@ -7,12 +7,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import hamaster.gradesgin.ibe.IBEPrivateKey;
 import hamaster.gradesgin.ibe.IBESystemParameter;
 import hamaster.gradesgin.ibe.core.IBEEngine;
 import hamaster.gradesgin.ibs.IBSCertificate;
@@ -31,10 +35,33 @@ public class IBESystemBeanImpl implements IBESystemBean {
     private IBESystemRepository repo;
     private SecureKeyIO secureKeyIO;
 
+    private Map<Integer, IBEPrivateKey> serverPrivateKeys;
+
     @Autowired
     public IBESystemBeanImpl(IBESystemRepository repo, SecureKeyIO secureKeyIO) {
         this.repo = requireNonNull(repo);
         this.secureKeyIO = requireNonNull(secureKeyIO);
+        this.serverPrivateKeys = new ConcurrentHashMap<Integer, IBEPrivateKey>();
+    }
+
+    @Override
+    public IBEPrivateKey getPrivateKeyForSystem(Integer systemID) {
+        String publicKey = null;
+        IBESystem system = null;
+        IBEPrivateKey key = serverPrivateKeys.get(systemID);
+        if (key != null)
+            return key;
+        try {
+            IBESystemEntity entity = repo.getOne(systemID);
+            publicKey = entity.getSystemOwner();
+            system = entity.getSystem(secureKeyIO.getSystemAccessPassword(systemID).getBytes());
+        } catch (EntityNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+        key = IBEEngine.keygen(system.getParameter(), publicKey);
+        serverPrivateKeys.put(systemID, key);
+        return key;
     }
 
     @Override

@@ -85,7 +85,7 @@ public class IBERequestHandlerDaemon implements Runnable {
         csr.setApplicationDate(request.getApplicationDate());
         csr.setIbeSystemId(request.getIbeSystemId());
         csr.setIdentityString(request.getIdentityString());
-        csr.setPassword(request.getPassword());
+        csr.setPassword(request.getPasswordToKeyGen());
         csr.setPeriod(YEAR); // TODO a year
         csr.setRequestId(request.getRequestId());
         return csr;

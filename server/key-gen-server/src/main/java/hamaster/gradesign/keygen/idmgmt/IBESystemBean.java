@@ -2,6 +2,8 @@ package hamaster.gradesign.keygen.idmgmt;
 
 import java.util.Map;
 
+import hamaster.gradesgin.ibe.IBEPrivateKey;
+
 public interface IBESystemBean {
 
     /**
@@ -15,6 +17,8 @@ public interface IBESystemBean {
 
     // for test purpose only
     void generateDemoSystem();
+
+    IBEPrivateKey getPrivateKeyForSystem(Integer systemID);
 
     /**
      * 获取IBE系统编号和名称的对应关系
