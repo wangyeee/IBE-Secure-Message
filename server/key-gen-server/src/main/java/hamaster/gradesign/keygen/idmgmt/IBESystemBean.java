@@ -3,6 +3,7 @@ package hamaster.gradesign.keygen.idmgmt;
 import java.util.Map;
 
 import hamaster.gradesgin.ibe.IBEPrivateKey;
+import hamaster.gradesgin.ibe.IBEPublicParameter;
 
 public interface IBESystemBean {
 
@@ -27,6 +28,10 @@ public interface IBESystemBean {
      * @return Map对象
      */
     Map<Integer, String> list(int page, int amount);
+
+    Map<Integer, String> listAll();
+
+    Map<Integer, IBEPublicParameter> listAllParameters();
 
     /**
      * Get the system ID (primary key in DB) from the owner

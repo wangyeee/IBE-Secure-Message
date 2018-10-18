@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import hamaster.gradesgin.ibe.IBEPrivateKey;
+import hamaster.gradesgin.ibe.IBEPublicParameter;
 import hamaster.gradesgin.ibe.IBESystemParameter;
 import hamaster.gradesgin.ibe.core.IBEEngine;
 import hamaster.gradesgin.ibs.IBSCertificate;
@@ -115,5 +117,23 @@ public class IBESystemBeanImpl implements IBESystemBean {
         if (system.isPresent())
             return system.get().getSystemId();
         return -1;
+    }
+
+    @Override
+    public Map<Integer, String> listAll() {
+        List<IBESystemEntity> systems = repo.findAll();
+        Map<Integer, String> results = new HashMap<Integer, String>();
+        for (IBESystemEntity system : systems)
+            results.put(system.getSystemId(), system.getSystemOwner());
+        return results;
+    }
+
+    @Override
+    public Map<Integer, IBEPublicParameter> listAllParameters() {
+        List<IBESystemEntity> systems = repo.findAll();
+        Map<Integer, IBEPublicParameter> results = new HashMap<Integer, IBEPublicParameter>();
+        for (IBESystemEntity system : systems)
+            results.put(system.getSystemId(), system.getSystem(secureKeyIO.getSystemAccessPassword(system.getSystemId()).getBytes()).getParameter().getPublicParameter());
+        return results;
     }
 }

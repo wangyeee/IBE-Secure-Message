@@ -10,12 +10,18 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import hamaster.gradesgin.ibe.IBECipherText;
 import hamaster.gradesgin.ibe.IBEConstraints;
+import hamaster.gradesgin.ibe.IBEPlainText;
+import hamaster.gradesgin.ibe.core.IBEEngine;
 import hamaster.gradesgin.ibe.io.SecureByteArrayInputStream;
 import hamaster.gradesgin.ibe.io.SecureByteArrayOutputStream;
+import hamaster.gradesgin.util.Hash;
 import hamaster.gradesgin.util.Hex;
+import hamaster.gradesign.keydist.daemon.KeyGenClient;
 import hamaster.gradesign.keydist.entity.IDRequest;
 import hamaster.gradesign.keydist.entity.User;
 import hamaster.gradesign.keydist.service.ClientService;
@@ -26,6 +32,8 @@ import hamaster.gradesign.keygen.IdentityDescription;
 import hamaster.gradesign.keygen.entity.IdentityDescriptionEntity;
 import hamaster.gradesign.keygen.idmgmt.IBESystemBean;
 
+import static java.util.Objects.requireNonNull;
+
 @Service
 public class ClientManager implements ClientService {
 
@@ -33,11 +41,17 @@ public class ClientManager implements ClientService {
 
     private IDRequestService idRequestService;
 
-    private IBESystemBean systemBean;
+    private IBESystemBean systemBean;// TODO remove
 
     private Logger logger;
 
-    public ClientManager() {
+    private KeyGenClient keyGenClient;
+
+    @Autowired
+    public ClientManager(UserService userService, IDRequestService idRequestService, KeyGenClient keyGenClient) {
+        this.userService = requireNonNull(userService);
+        this.idRequestService = requireNonNull(idRequestService);
+        this.keyGenClient = requireNonNull(keyGenClient);
         logger = LoggerFactory.getLogger(getClass());
     }
 
@@ -207,7 +221,7 @@ public class ClientManager implements ClientService {
                 ret[0] = ERR_EOF;
                 return ret;
             }
-            String idPassword = new String(idPwdBin);
+            String idPassword = Hex.hex(Hash.sha512(idPwdBin));
             in.close();
 
             User user = userService.login(email, password);
@@ -226,6 +240,7 @@ public class ClientManager implements ClientService {
             idr.setIbeSystemId(ibeSystemId);
             idr.setIdentityString(id);
             idr.setPassword(idPassword);
+            idr.setPasswordToKeyGen(encryptSessionKeyForSystem(idPwdBin, ibeSystemId));
             idr.setStatus(IBECSR.APPLICATION_NOT_VERIFIED);
 
             idRequestService.save(idr);
@@ -239,6 +254,25 @@ public class ClientManager implements ClientService {
             } catch (IOException e) {
             }
         }
+    }
+
+    private byte[] encryptSessionKeyForSystem(byte[] idPwdBin, int ibeSystemId) {
+        IBEPlainText plainText = new IBEPlainText();
+        plainText.setContent(idPwdBin);
+        plainText.setLength(idPwdBin.length);
+        IBECipherText cipher = IBEEngine.encrypt(keyGenClient.getKeyGenServerPublicParameter(ibeSystemId), plainText , keyGenClient.getSystemIDStr(ibeSystemId));
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            cipher.writeExternal(out);
+            out.flush();
+        } catch (IOException e) {
+        } finally {
+            try {
+                out.close();
+            } catch (IOException e) {
+            }
+        }
+        return out.toByteArray();
     }
 
     /**
@@ -403,6 +437,7 @@ public class ClientManager implements ClientService {
      * 系统列表 数字节（每一个系统列表项包含4字节的系统编号 1字节的系统名长度和数字节的系统名）</li></ul>
      * @throws IOException
      */
+    @Deprecated
     public byte[] listSystems(byte[] request) {
         byte[] ret = new byte[1];
         ByteArrayInputStream in = new SecureByteArrayInputStream(request);
@@ -422,6 +457,7 @@ public class ClientManager implements ClientService {
                 ret[0] = ERR_EOF;
                 return ret;
             }
+            // TODO replace the following method call with REST API
             Map<Integer, String> systems = systemBean.list(page, amount);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             out.write(ERR_SUCCESS);

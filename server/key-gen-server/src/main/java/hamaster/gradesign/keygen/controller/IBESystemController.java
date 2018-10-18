@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import hamaster.gradesgin.ibe.IBEPublicParameter;
 import hamaster.gradesign.keygen.SimpleRESTResponse;
 import hamaster.gradesign.keygen.idmgmt.IBESystemBean;
 
@@ -33,6 +34,16 @@ public class IBESystemController {
     @GetMapping("/system/default")
     public Map<Integer, String> defaultSystem() {
         return ibeSystem.list(0, 1);
+    }
+
+    @GetMapping("/system/all")
+    public Map<Integer, String> allSystem() {
+        return ibeSystem.listAll();
+    }
+
+    @GetMapping("/system/allparam")
+    public Map<Integer, IBEPublicParameter> allSystemParameters() {
+        return ibeSystem.listAllParameters();
     }
 
     @GetMapping("/system/{owner}/number")

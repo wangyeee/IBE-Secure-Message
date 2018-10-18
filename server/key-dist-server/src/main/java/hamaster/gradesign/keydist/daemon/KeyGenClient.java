@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import hamaster.gradesgin.ibe.IBEPrivateKey;
+import hamaster.gradesgin.ibe.IBEPublicParameter;
 import hamaster.gradesgin.ibs.IBSCertificate;
 import hamaster.gradesgin.util.Hex;
 import hamaster.gradesgin.util.IBECapsule;
@@ -57,14 +60,18 @@ public class KeyGenClient {
 
     private RestTemplate restTemplate;
 
+    private Map<Integer, String> systemIDs;
+    private Map<Integer, IBEPublicParameter> systemParameters;
+
     @Autowired
     public KeyGenClient(RestTemplateBuilder restTemplateBuilder) {
         this.restTemplate = requireNonNull(restTemplateBuilder).build();
         currentSystemID = -1;
+        systemIDs = new ConcurrentHashMap<Integer, String>();
+        systemParameters = new ConcurrentHashMap<Integer, IBEPublicParameter>();
     }
 
     public void init() {
-        // TODO connect to key generation server
         SimpleRESTResponse resp = restTemplate.getForObject(String.format("%s/system/%s/number", keyGenServereURL, systemIDStr), SimpleRESTResponse.class);
         if (resp.getResultCode() == 0) {
             currentSystemID = (Integer) resp.getPayload();
@@ -72,6 +79,15 @@ public class KeyGenClient {
         } else {
             System.err.println(resp);
         }
+        @SuppressWarnings("unchecked")
+        Map<Integer, String> allSystem = restTemplate.getForObject(String.format("%s/system/all", keyGenServereURL), Map.class);
+        systemIDs.putAll(allSystem);
+        System.err.println("Current system IDs: " + systemIDs);
+
+        @SuppressWarnings("unchecked")
+        Map<Integer, IBEPublicParameter> allSystemParameters = restTemplate.getForObject(String.format("%s/system/allparam", keyGenServereURL), Map.class);
+        systemParameters.putAll(allSystemParameters);
+        System.err.println("Current system parameters: " + allSystemParameters);
     }
 
     public IBEPrivateKey serverPrivateKey() {
@@ -171,6 +187,14 @@ public class KeyGenClient {
                 }
             }
         }
+    }
+
+    public String getSystemIDStr(Integer systemID) {
+        return systemIDs.get(systemID);
+    }
+
+    public IBEPublicParameter getKeyGenServerPublicParameter(Integer systemID) {
+        return systemParameters.get(systemID);
     }
 
     public Integer getCurrentSystemID() {
