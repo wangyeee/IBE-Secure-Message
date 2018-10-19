@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -45,9 +47,17 @@ public class IBESystemEntity implements Serializable {
     private String systemOwner;
 
     /**
+     * A copy of public parameter, it's also stored in encryptedIBESystem
+     */
+    @Lob
+    @Column(nullable = false, name = "PUBLIC_PARAMETER")
+    private byte[] publicParameter;
+
+    /**
      * 以加密后字节形式存储的IBE系统参数
      */
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     @Column(nullable = false, name = "ENCRYPTED_SYSTEM")
     private byte[] encryptedIBESystem;
 
@@ -95,21 +105,21 @@ public class IBESystemEntity implements Serializable {
     /**
      * 获取密码保护的IBESystem对象
      * 加密方式为AES256_CBC_PKCS5Padding
-     * @param cryptionKeyAndIV 加密用的密钥和初始向量
+     * @param cryptionKey 加密用的密钥
      * @return IBESystem对象
      */
-    public IBESystem getSystem(byte[] cryptionKeyAndIV) {
+    public IBESystem getSystem(byte[] cryptionKey) {
         synchronized (this) {
             IBESystem system;
             if (encryptedIBESystem == null)
                 return null;
             IBECapsule capsule = new IBECapsuleAESImpl();
-            capsule.setKey(cryptionKeyAndIV);
+            capsule.setKey(cryptionKey);
             try {
                 ByteArrayInputStream bin = new ByteArrayInputStream(encryptedIBESystem);
                 capsule.readExternal(bin);
                 system = (IBESystem) capsule.getDataAsObject();
-                system.setCryptionKeyAndIV(cryptionKeyAndIV);
+                system.setCryptionKey(cryptionKey);
                 bin.close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -126,7 +136,7 @@ public class IBESystemEntity implements Serializable {
         synchronized (this) {
             ByteArrayOutputStream bout = new ByteArrayOutputStream();
             IBECapsule capsule = new IBECapsuleAESImpl();
-            capsule.setKey(system.getCryptionKeyAndIV());
+            capsule.setKey(system.getCryptionKey());
             capsule.protect(system);
             try {
                 capsule.writeExternal(bout);
@@ -143,35 +153,38 @@ public class IBESystemEntity implements Serializable {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
+    public byte[] getPublicParameter() {
+        return publicParameter;
+    }
+
+    public void setPublicParameter(byte[] publicParameter) {
+        this.publicParameter = publicParameter;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + Arrays.hashCode(encryptedIBESystem);
+        result = prime * result + Arrays.hashCode(publicParameter);
         result = prime * result + ((systemId == null) ? 0 : systemId.hashCode());
         result = prime * result + ((systemKeyHash == null) ? 0 : systemKeyHash.hashCode());
         result = prime * result + ((systemOwner == null) ? 0 : systemOwner.hashCode());
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
         if (obj == null)
             return false;
-        if (!(obj instanceof IBESystemEntity))
+        if (getClass() != obj.getClass())
             return false;
         IBESystemEntity other = (IBESystemEntity) obj;
         if (!Arrays.equals(encryptedIBESystem, other.encryptedIBESystem))
+            return false;
+        if (!Arrays.equals(publicParameter, other.publicParameter))
             return false;
         if (systemId == null) {
             if (other.systemId != null)
@@ -191,15 +204,10 @@ public class IBESystemEntity implements Serializable {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
-        return "IBESystemEntity [systemId=" + systemId + ", systemOwner="
-               + systemOwner + ", encryptedIBESystem="
-               + Arrays.toString(encryptedIBESystem) + ", systemKeyHash="
-               + systemKeyHash + "]";
+        return "IBESystemEntity [systemId=" + systemId + ", systemOwner=" + systemOwner + ", publicParameter="
+                + Arrays.toString(publicParameter) + ", encryptedIBESystem=" + Arrays.toString(encryptedIBESystem)
+                + ", systemKeyHash=" + systemKeyHash + "]";
     }
 }

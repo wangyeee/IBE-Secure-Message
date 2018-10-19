@@ -25,7 +25,7 @@ public class IBESystem implements Serializable, SecureConstraints {
     /**
      * 加密用的密钥
      */
-    private transient byte[] cryptionKeyAndIV;
+    private transient byte[] cryptionKey;
 
     public IBESystem() {
     }
@@ -46,13 +46,11 @@ public class IBESystem implements Serializable, SecureConstraints {
         this.certificate = certificate;
     }
 
-    public byte[] getCryptionKeyAndIV() {
-        return cryptionKeyAndIV;
+    public byte[] getCryptionKey() {
+        return cryptionKey;
     }
 
-    public void setCryptionKeyAndIV(byte[] cryptionKeyAndIV) {
-        if (cryptionKeyAndIV == null || cryptionKeyAndIV.length != KEY_LENGTH_IN_BYTES + IV_LENGTH_IN_BYTES)
-            throw new IllegalArgumentException("cryptionKeyAndIV must be 48 bytes!");
-        this.cryptionKeyAndIV = cryptionKeyAndIV;
+    public void setCryptionKey(byte[] cryptionKey) {
+        this.cryptionKey = cryptionKey;
     }
 }

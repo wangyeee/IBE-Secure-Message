@@ -4,6 +4,7 @@ import java.util.Map;
 
 import hamaster.gradesgin.ibe.IBEPrivateKey;
 import hamaster.gradesgin.ibe.IBEPublicParameter;
+import hamaster.gradesign.keygen.IBESystem;
 
 public interface IBESystemBean {
 
@@ -13,8 +14,9 @@ public interface IBESystemBean {
      * @param owner The uniq owner string for the system
      * @param pairing The pairing string shared by all users in the system
      * @param password The password used to protect system master key
+     * @return The newly created IBESystem
      */
-    void createIBSSystem(String owner, byte[] pairing, byte[] password);
+    IBESystem createIBSSystem(String owner, byte[] pairing, byte[] password);
 
     // for test purpose only
     void generateDemoSystem();

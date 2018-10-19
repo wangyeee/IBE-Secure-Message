@@ -9,7 +9,7 @@ public class DummySecureKeyIOImpl implements SecureKeyIO {
     }
 
     @Override
-    public String getSystemAccessPassword(int systemId) {
-        return "sjdfu838g9n?:{,;[]=-`1-29gyudfugnfdi93990(*dgf^%fgd$&45g*325(";
+    public byte[] getSystemAccessPassword(int systemId) {
+        return "sjdfu838g9n?:{,;[]=-`1-29gyudfugnfdi93990(*dgf^%fgd$&45g*325(".getBytes();
     }
 }

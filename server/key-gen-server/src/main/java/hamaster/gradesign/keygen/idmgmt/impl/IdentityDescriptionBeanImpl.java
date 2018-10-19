@@ -152,7 +152,7 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
         }
         byte[] keyIV0 = new byte[SecureConstraints.IV_LENGTH_IN_BYTES + SecureConstraints.KEY_LENGTH_IN_BYTES];
         byte[] key0 = Hash.sha256(secureKeyIO.getSystemAccessPassword(systemId));
-        byte[] iv0 = Hash.md5(secureKeyIO.getSystemAccessPassword(systemId).getBytes());
+        byte[] iv0 = Hash.md5(secureKeyIO.getSystemAccessPassword(systemId));
         System.arraycopy(key0, 0, keyIV0, 0, key0.length);
         System.arraycopy(iv0, 0, keyIV0, key0.length, iv0.length);
 
