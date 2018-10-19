@@ -4,7 +4,6 @@ import static hamaster.gradesgin.util.Hex.bytesToInt;
 import static hamaster.gradesgin.util.Hex.intToByte;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -198,15 +197,6 @@ public class IBEPublicParameter implements Serializable, IBEConstraints {
         System.arraycopy(buffer, IBE_G_SIZE, paramG1, 0, IBE_G_SIZE);
         System.arraycopy(buffer, IBE_G_SIZE * 2, paramH, 0, IBE_G_SIZE);
         MemoryUtil.fastSecureBuffers(buffer);
-    }
-
-    public byte[] toByteArray() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream(IBE_G_SIZE * 10);
-        try {
-            writeExternal(out);
-        } catch (IOException e) {
-        }
-        return out.toByteArray();
     }
 
     public static IBEPublicParameter fromByteArray(byte[] data) throws ClassNotFoundException, IOException {

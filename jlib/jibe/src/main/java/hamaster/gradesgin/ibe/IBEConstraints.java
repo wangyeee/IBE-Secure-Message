@@ -1,5 +1,6 @@
 package hamaster.gradesgin.ibe;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,4 +40,13 @@ public interface IBEConstraints {
      * @throws ClassNotFoundException 读取的数据无法作为类的数据
      */
     void readExternal(InputStream in) throws IOException, ClassNotFoundException;
+
+    default byte[] toByteArray() {
+        ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
+        try {
+            writeExternal(out);
+        } catch (IOException e) {
+        }
+        return out.toByteArray();
+    }
 }

@@ -9,11 +9,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,8 +26,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import hamaster.gradesgin.ibe.IBECipherText;
+import hamaster.gradesgin.ibe.IBEPlainText;
 import hamaster.gradesgin.ibe.IBEPrivateKey;
 import hamaster.gradesgin.ibe.IBEPublicParameter;
+import hamaster.gradesgin.ibe.core.IBEEngine;
 import hamaster.gradesgin.ibs.IBSCertificate;
 import hamaster.gradesgin.util.Hex;
 import hamaster.gradesgin.util.IBECapsule;
@@ -64,6 +71,8 @@ public class KeyGenClient {
 
     private Map<Integer, String> systemIDs;
     private Map<Integer, IBEPublicParameter> systemParameters;
+
+    private final static Logger logger = LoggerFactory.getLogger(KeyGenClient.class);
 
     @Autowired
     public KeyGenClient(RestTemplateBuilder restTemplateBuilder, @Qualifier("base64Encoder") Encoder base64) {
@@ -158,24 +167,30 @@ public class KeyGenClient {
         File folder = new File(serverKeyLocation);
         if (!folder.exists())
             folder.mkdirs();
+        byte[] sessionKey = randomKey(64);
+        IBEPlainText plain = new IBEPlainText();
+        plain.setContent(sessionKey);
+        plain.setLength(sessionKey.length);
+        IBECipherText cipher = IBEEngine.encrypt(getKeyGenServerPublicParameter(currentSystemID), plain, getSystemIDStr(currentSystemID));
         IBECSR request = new IBECSR();
         request.setApplicationDate(new Date());
         request.setIdentityString(serverID);
         request.setIbeSystemId(currentSystemID);
         request.setPeriod(serverKeyValidPeriod);
+        request.setPassword(cipher.toByteArray());
         ResponseEntity<SimpleRESTResponse> resp = restTemplate.postForEntity(String.format("%s/singleid", keyGenServereURL), request, SimpleRESTResponse.class);
         if (resp.hasBody()) {
             Properties serverKey = new Properties();
             IdentityDescriptionEntity id = (IdentityDescriptionEntity) resp.getBody().getPayload();
             serverKey.setProperty(SERVER_KEY_FILE_CONTENT, Hex.hex(id.getEncryptedIdentityDescription()));
-            serverKey.setProperty(SERVER_KEY_FILE_CRYPT_KEY, "???");  // TODO generate random session key and encrypt it with IBE
+            serverKey.setProperty(SERVER_KEY_FILE_CRYPT_KEY, Hex.hex(sessionKey));
             File key = new File(folder, SERVER_KEY_FILE);
             if (key.exists()) {
                 File backup = new File(folder, String.format("%s_%d", SERVER_KEY_FILE, System.currentTimeMillis()));
                 if (key.renameTo(backup)) {
-                    // TODO log rename incident
+                    logger.warn("Creating server key backup file %s for %s", backup.getName(), key.getName());
                 } else {
-                    // TODO log error
+                    logger.error("Can't create server key backup file %s for %s", backup.getName(), key.getName());
                     return;
                 }
             }
@@ -186,7 +201,7 @@ public class KeyGenClient {
                 serverKey.store(out, "server key");
                 out.flush();
             } catch (IOException e) {
-                // TODO log error
+                logger.error("Error saving server key.", e);
                 e.printStackTrace();
             } finally {
                 try {
@@ -196,6 +211,13 @@ public class KeyGenClient {
                 }
             }
         }
+    }
+
+    public byte[] randomKey(int length) {
+        byte[] bytes = new byte[length];
+        Random rand = new SecureRandom();
+        rand.nextBytes(bytes);
+        return bytes;
     }
 
     public String getSystemIDStr(Integer systemID) {
