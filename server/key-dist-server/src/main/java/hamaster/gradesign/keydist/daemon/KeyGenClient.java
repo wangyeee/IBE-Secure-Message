@@ -39,7 +39,6 @@ import hamaster.gradesign.keydist.client.Encoder;
 import hamaster.gradesign.keygen.IBECSR;
 import hamaster.gradesign.keygen.IdentityDescription;
 import hamaster.gradesign.keygen.SimpleRESTResponse;
-import hamaster.gradesign.keygen.entity.IdentityDescriptionEntity;
 
 @Service
 public class KeyGenClient {
@@ -92,8 +91,13 @@ public class KeyGenClient {
             System.err.println(resp);
         }
         @SuppressWarnings("unchecked")
-        Map<Integer, String> allSystem = restTemplate.getForObject(String.format("%s/system/all", keyGenServereURL), Map.class);
-        systemIDs.putAll(allSystem);
+        Map<String, String> allSystem = restTemplate.getForObject(String.format("%s/system/all", keyGenServereURL), Map.class);
+        for (String key : allSystem.keySet()) {
+            try {
+                systemIDs.put(Integer.parseInt(key), allSystem.get(key));
+            } catch (NumberFormatException e) {
+            }
+        }
 
         @SuppressWarnings("unchecked")
         Map<String, Map<String, String>> allSystemParameters = restTemplate.getForObject(String.format("%s/system/allparam", keyGenServereURL), Map.class);
@@ -106,6 +110,9 @@ public class KeyGenClient {
             decodedParameter.setParamH(base64.decode(base64EncodedParameter.get("paramH")));
             systemParameters.put(Integer.parseInt(systemID), decodedParameter);
         }
+        prepareServerKeys();
+        if (serverPrivateKey == null || serverCertificate == null)
+            setupServerKeys();
     }
 
     public IBEPrivateKey serverPrivateKey() {
@@ -178,11 +185,19 @@ public class KeyGenClient {
         request.setIbeSystemId(currentSystemID);
         request.setPeriod(serverKeyValidPeriod);
         request.setPassword(cipher.toByteArray());
-        ResponseEntity<SimpleRESTResponse> resp = restTemplate.postForEntity(String.format("%s/singleid", keyGenServereURL), request, SimpleRESTResponse.class);
-        if (resp.hasBody()) {
+        ResponseEntity<SimpleRESTResponse> response = restTemplate.postForEntity(String.format("%s/singleid", keyGenServereURL), request, SimpleRESTResponse.class);
+        if (response.hasBody()) {
+            SimpleRESTResponse rest = response.getBody();
+            System.out.println(rest);
+            if (rest.getResultCode() != 0) {
+                logger.error("Failed to request server key: %d, deatil: %s", rest.getResultCode(), rest.getMessage());
+                return;
+            }
             Properties serverKey = new Properties();
-            IdentityDescriptionEntity id = (IdentityDescriptionEntity) resp.getBody().getPayload();
-            serverKey.setProperty(SERVER_KEY_FILE_CONTENT, Hex.hex(id.getEncryptedIdentityDescription()));
+            Object payload = response.getBody().getPayload();
+            System.out.println(payload);
+            // IdentityDescriptionEntity id = (IdentityDescriptionEntity) payload;
+            serverKey.setProperty(SERVER_KEY_FILE_CONTENT, payload.toString());
             serverKey.setProperty(SERVER_KEY_FILE_CRYPT_KEY, Hex.hex(sessionKey));
             File key = new File(folder, SERVER_KEY_FILE);
             if (key.exists()) {

@@ -1,12 +1,5 @@
 package hamaster.gradesign.keygen.entity;
 
-import hamaster.gradesgin.ibe.io.SecureByteArrayInputStream;
-import hamaster.gradesgin.ibe.io.SecureByteArrayOutputStream;
-import hamaster.gradesgin.util.IBECapsule;
-import hamaster.gradesgin.util.IBECapsuleAESImpl;
-import hamaster.gradesgin.util.MemoryUtil;
-import hamaster.gradesign.keygen.IdentityDescription;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,6 +16,15 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import hamaster.gradesgin.ibe.io.SecureByteArrayInputStream;
+import hamaster.gradesgin.ibe.io.SecureByteArrayOutputStream;
+import hamaster.gradesgin.util.IBECapsule;
+import hamaster.gradesgin.util.IBECapsuleAESImpl;
+import hamaster.gradesgin.util.MemoryUtil;
+import hamaster.gradesign.keygen.IdentityDescription;
 
 /**
  * 保存用户身份描述信息的表
@@ -81,6 +83,7 @@ public class IdentityDescriptionEntity implements Serializable {
         this.idOwner = idOwner;
     }
 
+    @JsonIgnore
     public IBESystemEntity getSystem() {
         return system;
     }

@@ -41,7 +41,7 @@ public class IBEMailDaemon implements Runnable {
     @Autowired
     public IBEMailDaemon(IBEMailParameterGenerator mailParameterGenerator, JavaMailSender mailSender,
             IDRequestService idRequestDAO, UserDAO userDAO) {
-        running = true;
+        running = false;
         this.mailParameterGenerator = mailParameterGenerator;
         this.mailSender = mailSender;
         this.idRequestDAO = idRequestDAO;

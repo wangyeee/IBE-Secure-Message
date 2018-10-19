@@ -12,8 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import hamaster.gradesgin.util.Hex;
 import hamaster.gradesign.keygen.IBECSR;
 import hamaster.gradesign.keygen.SimpleRESTResponse;
 import hamaster.gradesign.keygen.entity.IdentityDescriptionEntity;
@@ -30,12 +32,12 @@ public class IdentityDescriptionController {
     }
 
     @PostMapping("/genid")
-    public CompletableFuture<Map<String, Integer>> processIDGeneration(List<IBECSR> requests) throws InterruptedException, ExecutionException {
+    public CompletableFuture<Map<String, Integer>> processIDGeneration(@RequestBody(required = true) List<IBECSR> requests) throws InterruptedException, ExecutionException {
         return CompletableFuture.completedFuture(identityDescriptionBean.generateIdentityDescriptionsSync(requests));
     }
 
     @PostMapping("/singleid")
-    public SimpleRESTResponse singleIDRequest(IBECSR request) {
+    public SimpleRESTResponse singleIDRequest(@RequestBody(required = true) IBECSR request) {
         SimpleRESTResponse resp = new SimpleRESTResponse();
         request = requireNonNull(request);
         IdentityDescriptionEntity exist = identityDescriptionBean.get(request.getIdentityString());
@@ -49,12 +51,12 @@ public class IdentityDescriptionController {
         IdentityDescriptionEntity newId = identityDescriptionBean.generateSingleIdentityDescriptionEntity(request);
         resp.setResultCode(0);
         resp.setMessage(String.format("Successfully generated ID for %s in system %s", request.getIdentityString(), newId.getSystem().getSystemOwner()));
-        resp.setPayload(newId);
+        resp.setPayload(Hex.hex(newId.getEncryptedIdentityDescription()));
         return resp;
     }
 
     @PostMapping("/genidsync")
-    public Map<String, Integer> processIDGenerationSync(List<IBECSR> requests) {
+    public Map<String, Integer> processIDGenerationSync(@RequestBody(required = true) List<IBECSR> requests) {
         return identityDescriptionBean.generateIdentityDescriptionsSync(requests);
     }
 

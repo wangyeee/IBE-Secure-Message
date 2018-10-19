@@ -30,7 +30,6 @@ import hamaster.gradesgin.util.Hex;
 import hamaster.gradesign.keygen.IBECSR;
 import hamaster.gradesign.keygen.IBESystem;
 import hamaster.gradesign.keygen.IdentityDescription;
-import hamaster.gradesign.keygen.SecureConstraints;
 import hamaster.gradesign.keygen.entity.IBESystemEntity;
 import hamaster.gradesign.keygen.entity.IdentityDescriptionEntity;
 import hamaster.gradesign.keygen.idmgmt.IBESystemBean;
@@ -150,13 +149,7 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
         if (!system.getSystemKeyHash().equalsIgnoreCase(sha512)) {
             return null;
         }
-        byte[] keyIV0 = new byte[SecureConstraints.IV_LENGTH_IN_BYTES + SecureConstraints.KEY_LENGTH_IN_BYTES];
-        byte[] key0 = Hash.sha256(secureKeyIO.getSystemAccessPassword(systemId));
-        byte[] iv0 = Hash.md5(secureKeyIO.getSystemAccessPassword(systemId));
-        System.arraycopy(key0, 0, keyIV0, 0, key0.length);
-        System.arraycopy(iv0, 0, keyIV0, key0.length, iv0.length);
-
-        IBESystem sys = system.getSystem(keyIV0);
+        IBESystem sys = system.getSystem(secureKeyIO.getSystemAccessPassword(systemId));
 
         // 声称私钥和签名证书
         IBEPrivateKey privateKey = IBEEngine.keygen(sys.getParameter(), owner);
