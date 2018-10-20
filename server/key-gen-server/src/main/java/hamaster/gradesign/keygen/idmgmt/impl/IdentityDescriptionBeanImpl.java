@@ -178,6 +178,7 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
         IBECipherText cipher = new IBECipherText();
         try {
             cipher.readExternal(in);
+            System.out.println(cipher.toString());
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
             return null;
@@ -188,6 +189,7 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
             }
         }
         IBEPlainText plain = IBEEngine.decrypt(cipher, serverPrivateKey);
+        System.out.println(plain);
         return IBEPlainText.getSignificantBytes(plain);
     }
 }

@@ -175,29 +175,24 @@ public class KeyGenClient {
         if (!folder.exists())
             folder.mkdirs();
         byte[] sessionKey = randomKey(64);
-        IBEPlainText plain = new IBEPlainText();
-        plain.setContent(sessionKey);
-        plain.setLength(sessionKey.length);
+        IBEPlainText plain = IBEPlainText.newIbePlainTextFormSignificantBytes(sessionKey);
         IBECipherText cipher = IBEEngine.encrypt(getKeyGenServerPublicParameter(currentSystemID), plain, getSystemIDStr(currentSystemID));
         IBECSR request = new IBECSR();
         request.setApplicationDate(new Date());
         request.setIdentityString(serverID);
         request.setIbeSystemId(currentSystemID);
         request.setPeriod(serverKeyValidPeriod);
+        System.err.println("[Client] session cipher: " + cipher);
         request.setPassword(cipher.toByteArray());
         ResponseEntity<SimpleRESTResponse> response = restTemplate.postForEntity(String.format("%s/singleid", keyGenServereURL), request, SimpleRESTResponse.class);
         if (response.hasBody()) {
             SimpleRESTResponse rest = response.getBody();
-            System.out.println(rest);
             if (rest.getResultCode() != 0) {
                 logger.error("Failed to request server key: %d, deatil: %s", rest.getResultCode(), rest.getMessage());
                 return;
             }
             Properties serverKey = new Properties();
-            Object payload = response.getBody().getPayload();
-            System.out.println(payload);
-            // IdentityDescriptionEntity id = (IdentityDescriptionEntity) payload;
-            serverKey.setProperty(SERVER_KEY_FILE_CONTENT, payload.toString());
+            serverKey.setProperty(SERVER_KEY_FILE_CONTENT, response.getBody().getPayload().toString());
             serverKey.setProperty(SERVER_KEY_FILE_CRYPT_KEY, Hex.hex(sessionKey));
             File key = new File(folder, SERVER_KEY_FILE);
             if (key.exists()) {
