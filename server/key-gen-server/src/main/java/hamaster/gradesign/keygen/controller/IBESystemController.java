@@ -4,7 +4,11 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +19,8 @@ import hamaster.gradesign.keygen.idmgmt.IBESystemBean;
 
 @RestController
 public class IBESystemController {
+
+    private final static Logger logger = LoggerFactory.getLogger(IBESystemController.class);
 
     private IBESystemBean ibeSystem;
 
@@ -27,7 +33,7 @@ public class IBESystemController {
     @GetMapping("/demo")
     public Map<Integer, String> setupDemo() {
         if (ibeSystem.totalSystems() == 0L)
-            ibeSystem.generateDemoSystem();
+            ibeSystem.generateDefaultSystem();
         return ibeSystem.list(0, 1);
     }
 
@@ -59,5 +65,14 @@ public class IBESystemController {
             resp.setMessage(String.format("System ID not found for %s", owner));
         }
         return resp;
+    }
+
+    @EventListener
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        logger.info("Key generation server startup.");
+        if (ibeSystem.totalSystems() == 0L) {
+            logger.info("Generating default system parameters.");
+            ibeSystem.generateDefaultSystem();
+        }
     }
 }

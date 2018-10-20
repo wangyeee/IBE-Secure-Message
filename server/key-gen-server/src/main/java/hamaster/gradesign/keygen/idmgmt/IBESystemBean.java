@@ -19,7 +19,7 @@ public interface IBESystemBean {
     IBESystem createIBSSystem(String owner, byte[] pairing, byte[] password);
 
     // for test purpose only
-    void generateDemoSystem();
+    void generateDefaultSystem();
 
     IBEPrivateKey getPrivateKeyForSystem(Integer systemID);
 
