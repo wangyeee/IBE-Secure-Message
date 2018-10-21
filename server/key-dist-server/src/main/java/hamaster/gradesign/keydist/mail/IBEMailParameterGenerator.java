@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -58,12 +59,12 @@ public class IBEMailParameterGenerator {
         String ct = base64.encode(bs);
         ct = ct.replace('+', '*');
         ct = ct.replace('/', '-');
-        ct = ct.replaceAll("=", "%3D");
+        ct = StringUtils.replace(ct, "=", "%3D");
 
         String sg = base64.encode(sign);
         sg = sg.replace('+', '*');
         sg = sg.replace('/', '-');
-        sg = sg.replaceAll("=", "%3D");
+        sg = StringUtils.replace(sg, "=", "%3D");
         props.setProperty(CONTENT_KEY, ct);
         props.setProperty(SIGNATURE_KEY, sg);
         return props;

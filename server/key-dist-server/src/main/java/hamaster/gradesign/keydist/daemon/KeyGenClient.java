@@ -86,9 +86,9 @@ public class KeyGenClient {
         SimpleRESTResponse resp = restTemplate.getForObject(String.format("%s/system/%s/number", keyGenServereURL, systemIDStr), SimpleRESTResponse.class);
         if (resp.getResultCode() == 0) {
             currentSystemID = (Integer) resp.getPayload();
-            System.out.println("Connected to keygen server, default system: " + currentSystemID);
+            logger.info("Connected to keygen server, default system: %d ", currentSystemID);
         } else {
-            System.err.println(resp);
+            logger.error("Failed to connect to key generation server: %s, error code: %d, message: %s", keyGenServereURL, resp.getResultCode(), resp.getMessage());
         }
         @SuppressWarnings("unchecked")
         Map<String, String> allSystem = restTemplate.getForObject(String.format("%s/system/all", keyGenServereURL), Map.class);
@@ -182,7 +182,6 @@ public class KeyGenClient {
         request.setIdentityString(serverID);
         request.setIbeSystemId(currentSystemID);
         request.setPeriod(serverKeyValidPeriod);
-        System.err.println("[Client] session cipher: " + cipher);
         request.setPassword(cipher.toByteArray());
         ResponseEntity<SimpleRESTResponse> response = restTemplate.postForEntity(String.format("%s/singleid", keyGenServereURL), request, SimpleRESTResponse.class);
         if (response.hasBody()) {

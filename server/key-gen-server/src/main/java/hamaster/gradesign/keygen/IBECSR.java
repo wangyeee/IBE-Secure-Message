@@ -32,6 +32,11 @@ public class IBECSR implements Serializable {
     private byte[] password;
 
     /**
+     * The IBE signature from key distribution server
+     */
+    private byte[] signature;
+
+    /**
      * 所使用的系统
      */
     private Integer ibeSystemId;
@@ -97,6 +102,14 @@ public class IBECSR implements Serializable {
         this.password = password;
     }
 
+    public byte[] getSignature() {
+        return signature;
+    }
+
+    public void setSignature(byte[] signature) {
+        this.signature = signature;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -107,6 +120,7 @@ public class IBECSR implements Serializable {
         result = prime * result + Arrays.hashCode(password);
         result = prime * result + (int) (period ^ (period >>> 32));
         result = prime * result + ((requestId == null) ? 0 : requestId.hashCode());
+        result = prime * result + Arrays.hashCode(signature);
         return result;
     }
 
@@ -143,13 +157,15 @@ public class IBECSR implements Serializable {
                 return false;
         } else if (!requestId.equals(other.requestId))
             return false;
+        if (!Arrays.equals(signature, other.signature))
+            return false;
         return true;
     }
 
     @Override
     public String toString() {
         return "IBECSR [requestId=" + requestId + ", identityString=" + identityString + ", password="
-                + Arrays.toString(password) + ", ibeSystemId=" + ibeSystemId + ", applicationDate=" + applicationDate
-                + ", period=" + period + "]";
+                + Arrays.toString(password) + ", signature=" + Arrays.toString(signature) + ", ibeSystemId="
+                + ibeSystemId + ", applicationDate=" + applicationDate + ", period=" + period + "]";
     }
 }

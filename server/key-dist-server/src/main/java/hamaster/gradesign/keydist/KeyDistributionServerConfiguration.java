@@ -17,7 +17,7 @@ public class KeyDistributionServerConfiguration {
     @Autowired
     private DataSource dataSource;
 
-    @Bean
+    @Bean(destroyMethod = "")
     @ConfigurationProperties(prefix="spring.datasource")
     public DataSource dataSource() {
         return DataSourceBuilder.create().build();

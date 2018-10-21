@@ -1,5 +1,7 @@
 package hamaster.gradesign.keydist.mail;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -42,10 +44,10 @@ public class IBEMailDaemon implements Runnable {
     public IBEMailDaemon(IBEMailParameterGenerator mailParameterGenerator, JavaMailSender mailSender,
             IDRequestService idRequestDAO, UserDAO userDAO) {
         running = false;
-        this.mailParameterGenerator = mailParameterGenerator;
-        this.mailSender = mailSender;
-        this.idRequestDAO = idRequestDAO;
-        this.userDAO = userDAO;
+        this.mailParameterGenerator = requireNonNull(mailParameterGenerator);
+        this.mailSender = requireNonNull(mailSender);
+        this.idRequestDAO = requireNonNull(idRequestDAO);
+        this.userDAO = requireNonNull(userDAO);
     }
 
     @Override
