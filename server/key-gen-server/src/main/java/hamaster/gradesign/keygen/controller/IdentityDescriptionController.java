@@ -48,6 +48,11 @@ public class IdentityDescriptionController {
                 return resp;
             }
         }
+        if (identityDescriptionBean.isCSRSignatureValid(request)) {
+            resp.setResultCode(2);
+            resp.setMessage(String.format("Invalid request signature for %s", request.getIdentityString()));
+            return resp;
+        }
         IdentityDescriptionEntity newId = identityDescriptionBean.generateSingleIdentityDescriptionEntity(request);
         resp.setResultCode(0);
         resp.setMessage(String.format("Successfully generated ID for %s in system %s", request.getIdentityString(), newId.getSystem().getSystemOwner()));

@@ -21,10 +21,12 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import hamaster.gradesgin.ibe.IBECipherText;
+import hamaster.gradesgin.ibe.IBEConstraints;
 import hamaster.gradesgin.ibe.IBEPlainText;
 import hamaster.gradesgin.ibe.IBEPrivateKey;
 import hamaster.gradesgin.ibe.core.IBEEngine;
 import hamaster.gradesgin.ibs.IBSCertificate;
+import hamaster.gradesgin.ibs.IBSSignature;
 import hamaster.gradesgin.util.Hash;
 import hamaster.gradesgin.util.Hex;
 import hamaster.gradesign.keygen.IBECSR;
@@ -118,6 +120,17 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
         }
         idRepo.saveAll(objs);
         return map;
+    }
+
+    @Override
+    public boolean isCSRSignatureValid(IBECSR csr) {
+        if (csr.getSignature() == null) {
+            // TODO this is reserved for initial key dist server setup
+            // it will be replaced with proper message verification
+            return true;
+        }
+        IBSSignature signature = IBEConstraints.fromByteArray(csr.getSignature(), IBSSignature.class);
+        return IBEEngine.verify(signature, csr.getDigest());
     }
 
     @Override

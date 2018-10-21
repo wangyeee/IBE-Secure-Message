@@ -1,9 +1,11 @@
 package hamaster.gradesgin.ibe;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * 一些常数
@@ -48,5 +50,26 @@ public interface IBEConstraints {
         } catch (IOException e) {
         }
         return out.toByteArray();
+    }
+
+    static <T extends IBEConstraints> T fromByteArray(byte[] data, Class<T> clazz) {
+        T obj = null;
+        try {
+            obj = clazz.getConstructor().newInstance();
+        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            return null;
+        }
+        ByteArrayInputStream in = new ByteArrayInputStream(data);
+        try {
+            obj.readExternal(in);
+        } catch (ClassNotFoundException | IOException e) {
+            return null;
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+            }
+        }
+        return obj;
     }
 }

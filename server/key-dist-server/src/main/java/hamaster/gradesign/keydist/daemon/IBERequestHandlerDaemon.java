@@ -15,6 +15,9 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import hamaster.gradesgin.ibe.core.IBEEngine;
+import hamaster.gradesgin.ibs.IBSCertificate;
+import hamaster.gradesgin.ibs.IBSSignature;
 import hamaster.gradesign.keydist.entity.IDRequest;
 import hamaster.gradesign.keydist.service.IDRequestService;
 import hamaster.gradesign.keygen.IBECSR;
@@ -88,6 +91,11 @@ public class IBERequestHandlerDaemon implements Runnable {
         csr.setPassword(request.getPasswordToKeyGen());
         csr.setPeriod(YEAR); // TODO a year
         csr.setRequestId(request.getRequestId());
+        IBSCertificate certificate = system.serverCertificate();
+        if (certificate != null) {
+            IBSSignature signature = IBEEngine.sign(certificate, csr.getDigest(), "SHA-512");
+            csr.setSignature(signature.toByteArray());
+        }
         return csr;
     }
 
