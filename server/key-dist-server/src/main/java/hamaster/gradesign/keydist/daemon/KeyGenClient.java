@@ -222,6 +222,18 @@ public class KeyGenClient {
         }
     }
 
+    public byte[] encryptSessionKeyForSystem(byte[] idPwdBin, int ibeSystemId) {
+        IBEPlainText plainText = new IBEPlainText();
+        plainText.setContent(idPwdBin);
+        plainText.setLength(idPwdBin.length);
+        IBECipherText cipher = IBEEngine.encrypt(systemParameters.get(ibeSystemId), plainText , systemIDs.get(ibeSystemId));
+        return cipher.toByteArray();
+    }
+    
+    public byte[] encryptSessionKeyForSystem(byte[] bytes) {
+        return encryptSessionKeyForSystem(bytes, currentSystemID);
+    }
+
     public byte[] randomKey(int length) {
         byte[] bytes = new byte[length];
         Random rand = new SecureRandom();

@@ -29,7 +29,7 @@ public class IBERequestHandlerDaemon implements Runnable {
 
     final private static long YEAR = 31536000000l;
 
-    private IDRequestService idRequestDAO;
+    private IDRequestService idRequestService;
 
     private RestTemplate restTemplate;
 
@@ -53,7 +53,7 @@ public class IBERequestHandlerDaemon implements Runnable {
     public IBERequestHandlerDaemon(RestTemplateBuilder restTemplateBuilder, IDRequestService idRequestDAO, KeyGenClient system) {
         running = true;
         this.restTemplate = requireNonNull(restTemplateBuilder).build();
-        this.idRequestDAO = requireNonNull(idRequestDAO);
+        this.idRequestService = requireNonNull(idRequestDAO);
         this.system = requireNonNull(system);
     }
 
@@ -64,7 +64,7 @@ public class IBERequestHandlerDaemon implements Runnable {
             try {
                 Thread.sleep(interval);
             } catch (InterruptedException e) {}
-            List<IDRequest> userWork = idRequestDAO.listUnhandledRequests(batchSize);
+            List<IDRequest> userWork = idRequestService.listUnhandledRequests(batchSize);
             if (userWork.size() == 0)
                 continue;
             List<IBECSR> work = new ArrayList<IBECSR>(userWork.size());
@@ -73,7 +73,7 @@ public class IBERequestHandlerDaemon implements Runnable {
                 work.add(csr);
             }
             Map<String, Integer> results = generateIdentityDescriptions(work);
-            idRequestDAO.requestHandled(results);
+            idRequestService.requestHandled(results);
         }
         logger.info("Daemon extied at:" + new Date().toString());
     }

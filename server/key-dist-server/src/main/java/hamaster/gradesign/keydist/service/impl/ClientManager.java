@@ -1,5 +1,7 @@
 package hamaster.gradesign.keydist.service.impl;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,10 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import hamaster.gradesgin.ibe.IBECipherText;
 import hamaster.gradesgin.ibe.IBEConstraints;
-import hamaster.gradesgin.ibe.IBEPlainText;
-import hamaster.gradesgin.ibe.core.IBEEngine;
 import hamaster.gradesgin.ibe.io.SecureByteArrayInputStream;
 import hamaster.gradesgin.ibe.io.SecureByteArrayOutputStream;
 import hamaster.gradesgin.util.Hash;
@@ -31,8 +30,6 @@ import hamaster.gradesign.keygen.IBECSR;
 import hamaster.gradesign.keygen.IdentityDescription;
 import hamaster.gradesign.keygen.entity.IdentityDescriptionEntity;
 import hamaster.gradesign.keygen.idmgmt.IBESystemBean;
-
-import static java.util.Objects.requireNonNull;
 
 @Service
 public class ClientManager implements ClientService {
@@ -240,7 +237,7 @@ public class ClientManager implements ClientService {
             idr.setIbeSystemId(ibeSystemId);
             idr.setIdentityString(id);
             idr.setPassword(idPassword);
-            idr.setPasswordToKeyGen(encryptSessionKeyForSystem(idPwdBin, ibeSystemId));
+            idr.setPasswordToKeyGen(keyGenClient.encryptSessionKeyForSystem(idPwdBin, ibeSystemId));
             idr.setStatus(IBECSR.APPLICATION_NOT_VERIFIED);
 
             idRequestService.save(idr);
@@ -254,25 +251,6 @@ public class ClientManager implements ClientService {
             } catch (IOException e) {
             }
         }
-    }
-
-    private byte[] encryptSessionKeyForSystem(byte[] idPwdBin, int ibeSystemId) {
-        IBEPlainText plainText = new IBEPlainText();
-        plainText.setContent(idPwdBin);
-        plainText.setLength(idPwdBin.length);
-        IBECipherText cipher = IBEEngine.encrypt(keyGenClient.getKeyGenServerPublicParameter(ibeSystemId), plainText , keyGenClient.getSystemIDStr(ibeSystemId));
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            cipher.writeExternal(out);
-            out.flush();
-        } catch (IOException e) {
-        } finally {
-            try {
-                out.close();
-            } catch (IOException e) {
-            }
-        }
-        return out.toByteArray();
     }
 
     /**
