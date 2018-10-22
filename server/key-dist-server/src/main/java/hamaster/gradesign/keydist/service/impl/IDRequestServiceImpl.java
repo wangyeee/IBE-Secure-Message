@@ -65,13 +65,12 @@ public class IDRequestServiceImpl implements IDRequestService {
 
     @Override
     public void requestHandled(Map<String, Integer> results) {
-        // SHA2 function is used
-        BatchSqlUpdate sql = new BatchSqlUpdate(dataSource, "UPDATE IBE_ID_REQUEST SET PASSWORD=SHA2(PASSWORD, 512), APPLICATION_STATUS=? WHERE IDENTITY_STRING=? AND APPLICATION_STATUS<2");
+        BatchSqlUpdate sql = new BatchSqlUpdate(dataSource, "update ibe_id_request set application_status=? where identity_string=? and application_status<2");
         sql.setBatchSize(batchSize > results.size() ? results.size() : batchSize);
         sql.declareParameter(new SqlParameter(Types.INTEGER));
         sql.declareParameter(new SqlParameter(Types.VARCHAR));
         for (String id : results.keySet()) {
-            sql.update(id, results.get(id));
+            sql.update(results.get(id), id);
         }
         sql.flush();
     }

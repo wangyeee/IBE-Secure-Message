@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService {
         req.setApplicationDate(new Date());
         req.setIdentityString(user.getEmail());
         req.setIbeSystemId(client.getCurrentSystemID());
-        req.setStatus(IBECSR.APPLICATION_NOT_VERIFIED);
+        req.setStatus(IBECSR.APPLICATION_STARTED);
         req.setPassword(Hex.hex(Hash.sha512(password)));
         req.setPasswordToKeyGen(client.encryptSessionKeyForSystem(password.getBytes()));
         idRequestRepo.save(req);

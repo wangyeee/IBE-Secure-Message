@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -59,6 +60,7 @@ public class IDRequest implements Serializable, Cloneable {
     @Column(nullable = false, name = "PASSWORD")
     private String password;
 
+    @Lob
     @Column(nullable = false, name = "PASSWORD_KEYGEN")
     private byte[] passwordToKeyGen;
 

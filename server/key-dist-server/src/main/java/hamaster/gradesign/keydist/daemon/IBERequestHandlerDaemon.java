@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -67,20 +69,25 @@ public class IBERequestHandlerDaemon implements Runnable {
             List<IDRequest> userWork = idRequestService.listUnhandledRequests(batchSize);
             if (userWork.size() == 0)
                 continue;
+            logger.info("Submitting %d ID requests", userWork.size());
             List<IBECSR> work = new ArrayList<IBECSR>(userWork.size());
             for (IDRequest idRequest : userWork) {
                 IBECSR csr = convert(idRequest);
                 work.add(csr);
             }
             Map<String, Integer> results = generateIdentityDescriptions(work);
+            logger.info("%d responses received for ID requests", results.size());
             idRequestService.requestHandled(results);
         }
         logger.info("Daemon extied at:" + new Date().toString());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private Map<String, Integer> generateIdentityDescriptions(List<IBECSR> work) {
-        return (Map<String, Integer>) restTemplate.postForEntity(String.format("%s/genidsync", system.getKeyGenServereURL()), work, Map.class);
+        ResponseEntity<Map> response = restTemplate.postForEntity(String.format("%s/genidsync", system.getKeyGenServereURL()), work, Map.class);
+        if (response.hasBody())
+            return response.getBody();
+        return new HashMap<String, Integer>();
     }
 
     private IBECSR convert(IDRequest request) {

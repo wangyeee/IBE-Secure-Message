@@ -2,8 +2,6 @@ package hamaster.gradesign.keygen.idmgmt.impl;
 
 import static java.util.Objects.requireNonNull;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -187,22 +185,8 @@ public class IdentityDescriptionBeanImpl implements IdentityDescriptionBean {
      * @return the session key in plain text
      */
     private byte[] decryptSessionKeyWithServerKey(byte[] sessionKey, IBEPrivateKey serverPrivateKey) {
-        ByteArrayInputStream in = new ByteArrayInputStream(sessionKey);
-        IBECipherText cipher = new IBECipherText();
-        try {
-            cipher.readExternal(in);
-            System.out.println(cipher.toString());
-        } catch (ClassNotFoundException | IOException e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-            }
-        }
+        IBECipherText cipher = IBEConstraints.fromByteArray(sessionKey, IBECipherText.class);
         IBEPlainText plain = IBEEngine.decrypt(cipher, serverPrivateKey);
-        System.out.println(plain);
         return IBEPlainText.getSignificantBytes(plain);
     }
 }
