@@ -223,9 +223,7 @@ public class KeyGenClient {
     }
 
     public byte[] encryptSessionKeyForSystem(byte[] idPwdBin, int ibeSystemId) {
-        IBEPlainText plainText = new IBEPlainText();
-        plainText.setContent(idPwdBin);
-        plainText.setLength(idPwdBin.length);
+        IBEPlainText plainText = IBEPlainText.newIbePlainTextFormSignificantBytes(idPwdBin);
         IBECipherText cipher = IBEEngine.encrypt(systemParameters.get(ibeSystemId), plainText , systemIDs.get(ibeSystemId));
         return cipher.toByteArray();
     }
