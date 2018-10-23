@@ -23,6 +23,9 @@ public interface IDRequestDAO extends JpaRepository<IDRequest, Integer> {
     @Query("select i from IDRequest i where i.applicant = :o and i.status = :s")
     List<IDRequest> findAllByUserAndStatus(@Param("o") User owner, @Param("s") int status, Pageable page);
 
+    @Query("select i from IDRequest i where i.applicant = :o")
+    List<IDRequest> findAllByUser(@Param("o") User owner, Pageable page);
+
     @Query("select count(i) from IDRequest i where i.applicant = :o")
     Long countByOwner(@Param("o") User owner);
 }

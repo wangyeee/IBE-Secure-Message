@@ -10,7 +10,8 @@ public interface UserService {
      * @param password 明文密码
      * @return 只有电子邮件地址和密码匹配时返回User对象
      */
-    User login(String email, String password);
+    User loginWithEmail(String email, String password);
+    User loginWithUsername(String username, String password);
 
     boolean isEmailExist(String email);
 

@@ -32,14 +32,19 @@ public class UserServiceImpl implements UserService {
         this.client = requireNonNull(client);
     }
 
+    public User loginWithUsername(String username, String password) {
+        Optional<User> user = userRepo.findByUsername(username);
+        if (user.isPresent()) {
+            return checkPassword(user.get(), password);
+        }
+        return null;
+    }
+
     @Override
-    public User login(String email, String password) {
+    public User loginWithEmail(String email, String password) {
         Optional<User> user = userRepo.findByEmail(email);
         if (user.isPresent()) {
-            String salt = User.formatDate(user.get().getRegDate());
-            byte[] hash = Hash.sha512(new StringBuilder(password).append(salt).toString());
-            if (Hex.hex(hash).equalsIgnoreCase(user.get().getPassword()))
-                return user.get();
+            return checkPassword(user.get(), password);
         }
         return null;
     }
@@ -72,5 +77,13 @@ public class UserServiceImpl implements UserService {
     public boolean isUsernameExist(String username) {
         Optional<User> user = userRepo.findByUsername(username);
         return user.isPresent();
+    }
+
+    private User checkPassword(User user, String password) {
+        String salt = User.formatDate(user.getRegDate());
+        byte[] hash = Hash.sha512(new StringBuilder(password).append(salt).toString());
+        if (Hex.hex(hash).equalsIgnoreCase(user.getPassword()))
+            return user;
+        return null;
     }
 }

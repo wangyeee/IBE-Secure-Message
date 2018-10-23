@@ -55,6 +55,8 @@ public class IDRequestServiceImpl implements IDRequestService {
 
     @Override
     public List<IDRequest> list(User owner, int page, int amount, int status) {
+        if (status == IBECSR.APPLICATION_STATUS_ALL)
+            return idRequestRepo.findAllByUser(owner, PageRequest.of(page, amount));
         return idRequestRepo.findAllByUserAndStatus(owner, status, PageRequest.of(page, amount));
     }
 

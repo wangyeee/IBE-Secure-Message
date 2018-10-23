@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,10 +26,45 @@ public class UserController {
     private final static String LOGIN = "login";
 
     private UserService userService;
+    private EmailValidator emailValidator;
 
     @Autowired
     public UserController(UserService userService) {
         this.userService = requireNonNull(userService);
+        this.emailValidator = EmailValidator.getInstance();
+    }
+
+    @GetMapping(value = "/logout")
+    public String logout(Model model, HttpSession session) {
+        Object user = session.getAttribute("user");
+        if (user != null) {
+            session.removeAttribute("user");
+        }
+        model.addAttribute("messages", List.of("You have logged out"));
+        return LOGIN;
+    }
+
+    @GetMapping(value = "/login")
+    public String loginPage() {
+        return LOGIN;
+    }
+
+    @PostMapping(value = "/login")
+    public String login(@RequestParam(name = "username", required = true) String usernameOrEmail,
+            @RequestParam(name = "password", required = true) String password,
+            Model model, HttpSession session) {
+        User user = null;
+        if (emailValidator.isValid(usernameOrEmail)) {
+            user = userService.loginWithEmail(usernameOrEmail, password);
+        } else {
+            user = userService.loginWithUsername(usernameOrEmail, password);
+        }
+        if (user == null) {
+            model.addAttribute("messages", List.of("Invalid username or password"));
+            return LOGIN;
+        }
+        session.setAttribute("user", user);
+        return "redirect:/id";
     }
 
     @GetMapping(value = "/register")

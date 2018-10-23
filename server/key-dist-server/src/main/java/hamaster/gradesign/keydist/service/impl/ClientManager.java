@@ -114,7 +114,7 @@ public class ClientManager implements ClientService {
             }
             String idPassword = new String(idPwdBin);
 
-            User user = userService.login(email, password);
+            User user = userService.loginWithEmail(email, password);
             if (user == null) {
                 ret[0] = ERR_WRONG_PWD;
                 return ret;
@@ -221,7 +221,7 @@ public class ClientManager implements ClientService {
             String idPassword = Hex.hex(Hash.sha512(idPwdBin));
             in.close();
 
-            User user = userService.login(email, password);
+            User user = userService.loginWithEmail(email, password);
             if (user == null) {
                 ret[0] = ERR_WRONG_PWD;
                 return ret;
@@ -373,7 +373,7 @@ public class ClientManager implements ClientService {
             int status = in.read();
             if (status == -1)
                 status = 0;
-            User user = userService.login(email, password);
+            User user = userService.loginWithEmail(email, password);
             if (user == null) {
                 ret[0] = ERR_WRONG_PWD;
                 return ret;
@@ -488,7 +488,7 @@ public class ClientManager implements ClientService {
         }
         String password = new String(passwordBin);
         logger.debug(String.format("User %s login at %s, password: %s", email, new Date().toString(), password));
-        User user = userService.login(email, password);
+        User user = userService.loginWithEmail(email, password);
         if (user == null) {
             logger.debug("Login failure: wrong password for %s", email);
             ret[0] = ERR_WRONG_PWD;

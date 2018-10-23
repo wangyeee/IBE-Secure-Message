@@ -5,6 +5,7 @@ import java.util.Map;
 
 import hamaster.gradesign.keydist.entity.IDRequest;
 import hamaster.gradesign.keydist.entity.User;
+import hamaster.gradesign.keygen.IBECSR;
 
 public interface IDRequestService {
 
@@ -32,6 +33,10 @@ public interface IDRequestService {
      * @return 身份请求列表
      */
     List<IDRequest> list(User owner, int page, int amount, int status);
+
+    default List<IDRequest> list(User owner, int page, int amount) {
+        return list(owner, page, amount, IBECSR.APPLICATION_STATUS_ALL);
+    }
 
     /**
      * 获取未处理的请求列表
