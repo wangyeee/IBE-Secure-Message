@@ -30,11 +30,10 @@ public class Init {
     public void onApplicationEvent(ContextRefreshedEvent event) {
         system.init();
         Thread requestDaemon = new Thread(this.ibeRequestHandlerDaemon);
-        requestDaemon.setName("[IBERequestHandlerDaemon]");
+        requestDaemon.setName("[IBERequest.d]");
         requestDaemon.start();
-
         Thread mailDaemon = new Thread(this.mailDaemon);
-        mailDaemon.setName("[IBEMailDaemon]");
+        mailDaemon.setName("[IBEMail.d]");
         mailDaemon.start();
     }
 }

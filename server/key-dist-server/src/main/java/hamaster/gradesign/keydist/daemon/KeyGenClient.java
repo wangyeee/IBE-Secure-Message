@@ -9,13 +9,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,9 +92,9 @@ public class KeyGenClient {
         SimpleRESTResponse resp = restTemplate.getForObject(String.format("%s/system/%s/number", keyGenServereURL, systemIDStr), SimpleRESTResponse.class);
         if (resp.getResultCode() == 0) {
             currentSystemID = (Integer) resp.getPayload();
-            logger.info("Connected to keygen server, default system: %d ", currentSystemID);
+            logger.info("Connected to keygen server, default system: {} ", currentSystemID);
         } else {
-            logger.error("Failed to connect to key generation server: %s, error code: %d, message: %s", keyGenServereURL, resp.getResultCode(), resp.getMessage());
+            logger.error("Failed to connect to key generation server: {}, error code: {}, message: {}", keyGenServereURL, resp.getResultCode(), resp.getMessage());
         }
         @SuppressWarnings("unchecked")
         Map<String, String> allSystem = restTemplate.getForObject(String.format("%s/system/all", keyGenServereURL), Map.class);
@@ -131,14 +137,14 @@ public class KeyGenClient {
 
     private synchronized void prepareServerKeys() {
         File folder = new File(serverKeyLocation);
-        if (folder.isDirectory()) {
-            // TODO check file permission
+        if (checkFolerPermission(folder)) {
             Properties props = new Properties();
             InputStream key = null;
             try {
                 key = new FileInputStream(new File(folder, SERVER_KEY_FILE));
                 props.load(key);
             } catch (IOException e) {
+                logger.error("Failed to read server private key", e);
                 return;
             } finally {
                 try {
@@ -158,22 +164,81 @@ public class KeyGenClient {
             try {
                 capsule.readExternal(in);
                 id = (IdentityDescription) capsule.getDataAsObject();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+            } catch (ClassNotFoundException | IOException e) {
+                logger.error("Failed to decrypt server private key", e);
             } finally {
                 capsule.close();
             }
             serverPrivateKey = id == null ? null : id.getPrivateKey();
             serverCertificate = id == null ? null : id.getCertificate();
+            if (serverPrivateKey != null && serverCertificate != null)
+                logger.info("Successfully loaded server private key");
         }
+    }
+
+    private boolean checkFolerPermission(File folder) {
+        if (folder.isDirectory()) {
+            final String folderPermission = "rwx------";
+            if (SystemUtils.IS_OS_WINDOWS)
+                return true;  // Windows does not support PosixFilePermissions
+            if (folder.list().length == 0) {
+                Set<PosixFilePermission> permissions = PosixFilePermissions.fromString(folderPermission);
+                try {
+                    Files.setPosixFilePermissions(Paths.get(folder.getAbsolutePath()), permissions);
+                    return true;
+                } catch (IOException e) {
+                    return false;
+                }
+            }
+            try {
+                Set<PosixFilePermission> permissions = Files.getPosixFilePermissions(Paths.get(folder.getAbsolutePath()));
+                String currentPermission = PosixFilePermissions.toString(permissions);
+                if (folderPermission.equalsIgnoreCase(currentPermission)) {
+                    return true;
+                } else {
+                    logger.error("Incorrect permission settings for server key directory {}, expected {}, actual {}", folder.getAbsoluteFile(), folderPermission, currentPermission);
+                    return false;
+                }
+            } catch (IOException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private File createNewKeyFile(File folder, String name, boolean overwrite) throws IOException {
+        final String fildPermission = "rw-------";
+        Set<PosixFilePermission> permissions = PosixFilePermissions.fromString(fildPermission);
+        File key = new File(folder, name);
+        if (key.exists()) {
+            if (overwrite) {
+                logger.warn("Original key file {} will be overwritten", key.getAbsolutePath());
+                if (!key.delete()) {
+                    logger.error("Failed to overwrite existing key file");
+                    return null;
+                }
+            } else {
+                File backup = new File(folder, String.format("%s_%d", SERVER_KEY_FILE, System.currentTimeMillis()));
+                if (key.renameTo(backup)) {
+                    Files.setPosixFilePermissions(Paths.get(backup.getAbsolutePath()), permissions);
+                    logger.warn("Creating server key backup file {} for {}", backup.getName(), key.getName());
+                } else {
+                    logger.error("Can't create server key backup file {} for {}", backup.getName(), key.getName());
+                    return null;
+                }
+            }
+        }
+        key.createNewFile();
+        Files.setPosixFilePermissions(Paths.get(key.getAbsolutePath()), permissions);
+        return key;
     }
 
     public void setupServerKeys() {
         File folder = new File(serverKeyLocation);
-        if (!folder.exists())
+        if (!folder.exists()) {
             folder.mkdirs();
+            checkFolerPermission(folder);
+        }
         byte[] sessionKey = randomKey(64);
         IBEPlainText plain = IBEPlainText.newIbePlainTextFormSignificantBytes(sessionKey);
         IBECipherText cipher = IBEEngine.encrypt(getKeyGenServerPublicParameter(currentSystemID), plain, getSystemIDStr(currentSystemID));
@@ -187,31 +252,20 @@ public class KeyGenClient {
         if (response.hasBody()) {
             SimpleRESTResponse rest = response.getBody();
             if (rest.getResultCode() != 0) {
-                logger.error("Failed to request server key: %d, deatil: %s", rest.getResultCode(), rest.getMessage());
+                logger.error("Failed to request server key: {}, deatil: {}", rest.getResultCode(), rest.getMessage());
                 return;
             }
             Properties serverKey = new Properties();
             serverKey.setProperty(SERVER_KEY_FILE_CONTENT, response.getBody().getPayload().toString());
             serverKey.setProperty(SERVER_KEY_FILE_CRYPT_KEY, Hex.hex(sessionKey));
-            File key = new File(folder, SERVER_KEY_FILE);
-            if (key.exists()) {
-                File backup = new File(folder, String.format("%s_%d", SERVER_KEY_FILE, System.currentTimeMillis()));
-                if (key.renameTo(backup)) {
-                    logger.warn("Creating server key backup file %s for %s", backup.getName(), key.getName());
-                } else {
-                    logger.error("Can't create server key backup file %s for %s", backup.getName(), key.getName());
-                    return;
-                }
-            }
             OutputStream out = null;
             try {
-                key.createNewFile();
+                File key = createNewKeyFile(folder, SERVER_KEY_FILE, false);
                 out = new FileOutputStream(key);
                 serverKey.store(out, "server key");
                 out.flush();
             } catch (IOException e) {
                 logger.error("Error saving server key.", e);
-                e.printStackTrace();
             } finally {
                 try {
                     if (out != null)

@@ -61,7 +61,7 @@ public class IBERequestHandlerDaemon implements Runnable {
 
     @Override
     public void run() {
-        logger.info("Daemon started at:" + new Date().toString());
+        logger.info("IBERequestHandler started at {}", new Date().toString());
         while (running) {
             try {
                 Thread.sleep(interval);
@@ -69,17 +69,17 @@ public class IBERequestHandlerDaemon implements Runnable {
             List<IDRequest> userWork = idRequestService.listUnhandledRequests(batchSize);
             if (userWork.size() == 0)
                 continue;
-            logger.info("Submitting %d ID requests", userWork.size());
+            logger.info("Submitting {} ID requests", userWork.size());
             List<IBECSR> work = new ArrayList<IBECSR>(userWork.size());
             for (IDRequest idRequest : userWork) {
                 IBECSR csr = convert(idRequest);
                 work.add(csr);
             }
             Map<String, Integer> results = generateIdentityDescriptions(work);
-            logger.info("%d responses received for ID requests", results.size());
+            logger.info("{} responses received for ID requests", results.size());
             idRequestService.requestHandled(results);
         }
-        logger.info("Daemon extied at:" + new Date().toString());
+        logger.info("IBERequestHandler extied at {}", new Date().toString());
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

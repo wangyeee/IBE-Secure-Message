@@ -52,7 +52,7 @@ public class IBEMailDaemon implements Runnable {
 
     @Override
     public void run() {
-        logger.info("IBE Mail Daemon active at:" + new Date().toString());
+        logger.info("IBE Mail Daemon active at {}", new Date().toString());
         while (running) {
             sendingMail();
             try {
@@ -61,7 +61,7 @@ public class IBEMailDaemon implements Runnable {
                 e.printStackTrace();
             }
         }
-        logger.info("IBE Mail Daemon exit at:" + new Date().toString());
+        logger.info("IBE Mail Daemon exit at {}", new Date().toString());
     }
 
     public void stopRunning() {
