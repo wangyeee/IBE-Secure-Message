@@ -187,6 +187,7 @@ public class KeyGenClient {
                     Files.setPosixFilePermissions(Paths.get(folder.getAbsolutePath()), permissions);
                     return true;
                 } catch (IOException e) {
+                    logger.error("Failed to set permission for new server private key directory", e);
                     return false;
                 }
             }
@@ -200,6 +201,7 @@ public class KeyGenClient {
                     return false;
                 }
             } catch (IOException e) {
+                logger.error("Failed to read permission for existing server private key directory", e);
                 return false;
             }
         }
