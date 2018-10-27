@@ -295,6 +295,10 @@ public class KeyGenClient {
         return bytes;
     }
 
+    public Map<Integer, String> getAvailableSystem() {
+        return systemIDs;
+    }
+
     public String getSystemIDStr(Integer systemID) {
         return systemIDs.get(systemID);
     }

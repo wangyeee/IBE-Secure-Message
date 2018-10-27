@@ -111,4 +111,12 @@ public class IDRequestServiceImpl implements IDRequestService {
     public void save(IDRequest request) {
         idRequestRepo.save(request);
     }
+
+    @Override
+    public IDRequest getByIDString(String idString) {
+        Optional<IDRequest> request = idRequestRepo.findByIDString(idString);
+        if (request.isPresent())
+            return request.get();
+        return null;
+    }
 }

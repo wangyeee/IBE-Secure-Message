@@ -17,6 +17,8 @@ public interface IDRequestService {
      */
     IDRequest getByOwner(User owner, String idString);
 
+    IDRequest getByIDString(String idString);
+
     /**
      * 获取用户新发起的私钥申请
      * @param amount 获取数量
