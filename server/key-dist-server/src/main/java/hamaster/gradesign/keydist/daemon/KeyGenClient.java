@@ -45,6 +45,7 @@ import hamaster.gradesign.keydist.client.Encoder;
 import hamaster.gradesign.keygen.IBECSR;
 import hamaster.gradesign.keygen.IdentityDescription;
 import hamaster.gradesign.keygen.SimpleRESTResponse;
+import hamaster.gradesign.keygen.entity.IdentityDescriptionEntity;
 
 @Service
 public class KeyGenClient {
@@ -276,6 +277,11 @@ public class KeyGenClient {
                 }
             }
         }
+    }
+
+    public IdentityDescriptionEntity getIdentityDescription(String id) {
+        // TODO sign the get id request and send to key gen server
+        return null;
     }
 
     public byte[] encryptSessionKeyForSystem(byte[] idPwdBin, int ibeSystemId) {

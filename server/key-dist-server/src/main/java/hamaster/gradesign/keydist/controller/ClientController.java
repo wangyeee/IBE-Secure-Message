@@ -36,6 +36,10 @@ import hamaster.gradesign.keydist.daemon.KeyGenClient;
 import hamaster.gradesign.keydist.service.ClientService;
 import hamaster.gradesign.keydist.service.impl.ClientManager;
 
+/**
+ * The controller with binary data format
+ * @author Ye Wang
+ */
 @RestController
 public class ClientController {
 

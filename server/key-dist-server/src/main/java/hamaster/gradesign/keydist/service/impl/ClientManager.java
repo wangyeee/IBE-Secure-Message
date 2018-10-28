@@ -134,8 +134,7 @@ public class ClientManager implements ClientService {
                 ret[0] = ERR_ID_THEFT;
                 return ret;
             }
-            IdentityDescriptionEntity ide = identityDescriptionBeanGet(id);
-            // IdentityDescriptionEntity ide = identityDescriptionBean.get(id);
+            IdentityDescriptionEntity ide = keyGenClient.getIdentityDescription(id);
             IdentityDescription userId = ide.getIdentityDescription(idPassword.getBytes());
 
             byte[] idbs = userId.toByteArray();
@@ -152,11 +151,6 @@ public class ClientManager implements ClientService {
             } catch (IOException e) {
             }
         }
-    }
-
-    private IdentityDescriptionEntity identityDescriptionBeanGet(String id) {
-        // TODO call rest api
-        return null;
     }
 
     /**
