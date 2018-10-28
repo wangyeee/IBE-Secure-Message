@@ -13,8 +13,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import hamaster.gradesgin.ibe.IBEConstraints;
+import hamaster.gradesgin.ibe.core.IBEEngine;
+import hamaster.gradesgin.ibs.IBSSignature;
+import hamaster.gradesgin.util.Hash;
 import hamaster.gradesgin.util.Hex;
 import hamaster.gradesign.keygen.IBECSR;
 import hamaster.gradesign.keygen.SimpleRESTResponse;
@@ -63,6 +68,30 @@ public class IdentityDescriptionController {
     @PostMapping("/genidsync")
     public Map<String, Integer> processIDGenerationSync(@RequestBody(required = true) List<IBECSR> requests) {
         return identityDescriptionBean.generateIdentityDescriptionsSync(requests);
+    }
+
+    @GetMapping("/getid/{system}/{id}")
+    public SimpleRESTResponse getIDinSystem(@PathVariable(value = "system", required = true) String system,
+            @PathVariable(value = "id", required = true) String id,
+            @RequestParam(value = "sig", required = true) String distServerSig) {
+        SimpleRESTResponse resp = new SimpleRESTResponse();
+        StringBuilder content = new StringBuilder(system);
+        content.append('/');
+        content.append(id);
+        byte[] digest = Hash.sha512(content.toString().getBytes());
+        try {
+            IBSSignature signature = IBEConstraints.fromByteArray(Hex.unhex(distServerSig), IBSSignature.class);
+            if (IBEEngine.verify(signature, digest)) {
+                IdentityDescriptionEntity entity = identityDescriptionBean.get(id, system);
+                resp.setPayload(entity);
+                resp.setResultCode(0);
+                return resp;
+            }
+        } catch (Exception e) {
+        }
+        resp.setResultCode(1);
+        resp.setMessage("Invalid request");
+        return resp;
     }
 
     @GetMapping("/chkid/{system}/{id}")

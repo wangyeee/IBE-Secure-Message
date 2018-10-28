@@ -134,7 +134,7 @@ public class ClientManager implements ClientService {
                 ret[0] = ERR_ID_THEFT;
                 return ret;
             }
-            IdentityDescriptionEntity ide = keyGenClient.getIdentityDescription(id);
+            IdentityDescriptionEntity ide = keyGenClient.getIdentityDescription(idRequestService.getByOwner(user, id).getIbeSystemId(), id);
             IdentityDescription userId = ide.getIdentityDescription(idPassword.getBytes());
 
             byte[] idbs = userId.toByteArray();

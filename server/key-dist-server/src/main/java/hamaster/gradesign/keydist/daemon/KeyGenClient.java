@@ -38,6 +38,8 @@ import hamaster.gradesgin.ibe.IBEPrivateKey;
 import hamaster.gradesgin.ibe.IBEPublicParameter;
 import hamaster.gradesgin.ibe.core.IBEEngine;
 import hamaster.gradesgin.ibs.IBSCertificate;
+import hamaster.gradesgin.ibs.IBSSignature;
+import hamaster.gradesgin.util.Hash;
 import hamaster.gradesgin.util.Hex;
 import hamaster.gradesgin.util.IBECapsule;
 import hamaster.gradesgin.util.IBECapsuleAESImpl;
@@ -279,8 +281,28 @@ public class KeyGenClient {
         }
     }
 
-    public IdentityDescriptionEntity getIdentityDescription(String id) {
-        // TODO sign the get id request and send to key gen server
+    public IdentityDescriptionEntity getIdentityDescription(Integer system, String id) {
+        // @GetMapping("/getid/{system}/{id}")
+        // sign the get id request and send to key gen server
+        String systemStr = systemIDs.get(system);
+        StringBuilder content = new StringBuilder(systemStr);
+        content.append('/');
+        content.append(id);
+        byte[] digest = Hash.sha512(content.toString().getBytes());
+        IBSSignature signature = IBEEngine.sign(serverCertificate, digest, "SHA-512");
+        ResponseEntity<SimpleRESTResponse> response = restTemplate.getForEntity(String.format("%s/getid/%s/%s?sig=%s", keyGenServereURL, systemStr, id, Hex.hex(signature.toByteArray())), SimpleRESTResponse.class);
+        if (response.hasBody()) {
+            SimpleRESTResponse resp = response.getBody();
+            if (resp.getResultCode() == 0) {
+                IdentityDescriptionEntity ide = new IdentityDescriptionEntity();
+                @SuppressWarnings("unchecked")
+                Map<String, String> result = (Map<String, String>) resp.getPayload();
+                ide.setIbeId(Integer.parseInt(String.valueOf(result.get("ibeId"))));
+                ide.setIdOwner(result.get("idOwner"));
+                ide.setEncryptedIdentityDescription(base64.decode(result.get("encryptedIdentityDescription")));
+                return ide;
+            }
+        }
         return null;
     }
 

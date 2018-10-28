@@ -5,9 +5,8 @@ import static java.util.Objects.requireNonNull;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.websocket.server.PathParam;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -64,8 +63,8 @@ public class ClientRestController {
      * 根证书签名</li></ul>
      */
     @PostMapping("/api/key/{user}/{id}")
-    public Map<String, String> getUserKey(@PathParam(value = "user") String username,
-            @PathParam(value = "id") String keyID,
+    public Map<String, String> getUserKey(@PathVariable(value = "user") String username,
+            @PathVariable(value = "id") String keyID,
             @RequestParam(value = "p", required = true) String password,
             @RequestParam(value = "k", required = true) String keyPassword) {
         User owner = userService.loginWithUsername(username, password);
@@ -77,7 +76,7 @@ public class ClientRestController {
             // check id ownership and decryption password
             return errorMessage(ClientService.ERR_WRONG_ID_PWD, "Incorrect ID decryption key");
         }
-        IdentityDescriptionEntity ide = client.getIdentityDescription(keyID);
+        IdentityDescriptionEntity ide = client.getIdentityDescription(idRequestService.getByOwner(owner, keyID).getIbeSystemId(), keyID);
         IdentityDescription id = ide.getIdentityDescription(keyPassword.getBytes());
         IBEPublicParameter sysPublicparam = id.getSystemPublicParameter();
         IBEPrivateKey pkey = id.getPrivateKey();
