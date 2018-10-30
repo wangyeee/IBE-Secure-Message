@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -64,14 +65,10 @@ public class ClientRestController {
      */
     @PostMapping("/api/key/{user}/{id}")
     public Map<String, String> getUserKey(@PathVariable(value = "user") String username,
-            @PathVariable(value = "id") String keyID,
             @RequestParam(value = "p", required = true) String password,
+            @PathVariable(value = "id") String keyID,
             @RequestParam(value = "k", required = true) String keyPassword) {
         User owner = userService.loginWithUsername(username, password);
-        if (owner == null) {
-            // login failed
-            return errorMessage(ClientService.ERR_WRONG_PWD, "Incorrect username or password");
-        }
         if (idRequestService.doesIdBelongToUser(keyID, owner, keyPassword) > 0) {
             // check id ownership and decryption password
             return errorMessage(ClientService.ERR_WRONG_ID_PWD, "Incorrect ID decryption key");
@@ -102,18 +99,36 @@ public class ClientRestController {
         return result;
     }
 
+    /**
+     * 用户为一个ID申请描述信息
+     * @param request 请求体 具体内容：<ul><li>
+     * 用户注册时电子邮件地址（长度信息1字节 数据最多255字节 UTF-8编码）</li><li>
+     * 用户密码（长度信息1字节 数据最多255字节）</li><li>
+     * 用户所要使用的IBE系统（4字节）</li><li>
+     * 要请求的ID（长度信息1字节 数据最多255字节 UTF-8编码）</li><li>
+     * 用户为要请求的ID所设置的访问密码（长度信息1字节 数据最多255字节）</li></ul>
+     * @return 包含处理结果的字节数组 长度为1
+     */
+    @PutMapping("/api/keyreq/{user}/{id}")
+    public Map<String, String> applyUserKey(@PathVariable(value = "user") String username,
+            @RequestParam(value = "p", required = true) String password,
+            @PathVariable(value = "id") String keyID,
+            @RequestParam(value = "k", required = true) String keyPassword) {
+
+        return errorMessage(ClientService.ERR_EOF, "test only");
+    }
+
+    /*
+    byte[] register(byte[] request) throws IOException;
+    byte[] listIds(byte[] request) throws IOException;
+    byte[] listSystems(byte[] request) throws IOException;
+    byte[] login(byte[] request) throws IOException;
+    */
+
     private Map<String, String> errorMessage(int code, String message) {
         Map<String, String> resp = new HashMap<String, String>();
         resp.put("code", Integer.toString(code));
         resp.put("message", message);
         return resp;
     }
-
-    /*
-    byte[] applyUserKey(byte[] request) throws IOException;
-    byte[] register(byte[] request) throws IOException;
-    byte[] listIds(byte[] request) throws IOException;
-    byte[] listSystems(byte[] request) throws IOException;
-    byte[] login(byte[] request) throws IOException;
-    */
 }

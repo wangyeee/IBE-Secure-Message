@@ -16,7 +16,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableJpaRepositories(basePackages = "hamaster.gradesign.keydist.dao")
 @ComponentScan(basePackages = {"hamaster.gradesign.keydist.service", "hamaster.gradesign.keydist.daemon",
         "hamaster.gradesign.keydist.controller", "hamaster.gradesign.keydist.mail",
-        "hamaster.gradesign.keydist.client", "hamaster.gradesign.keydist.web"})
+        "hamaster.gradesign.keydist.client", "hamaster.gradesign.keydist.web",
+        "hamaster.gradesign.keydist.aop"})
 @EntityScan(basePackages = "hamaster.gradesign.keydist.entity")
 public class KeyDistributionServer {
     public static void main(String[] args) {
