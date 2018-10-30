@@ -2,6 +2,7 @@ package hamaster.gradesign.keydist.controller;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,12 +17,15 @@ import hamaster.gradesgin.ibe.IBEPrivateKey;
 import hamaster.gradesgin.ibe.IBEPublicParameter;
 import hamaster.gradesgin.ibs.IBSCertificate;
 import hamaster.gradesgin.ibs.IBSSignature;
+import hamaster.gradesgin.util.Hash;
 import hamaster.gradesgin.util.Hex;
 import hamaster.gradesign.keydist.daemon.KeyGenClient;
+import hamaster.gradesign.keydist.entity.IDRequest;
 import hamaster.gradesign.keydist.entity.User;
 import hamaster.gradesign.keydist.service.ClientService;
 import hamaster.gradesign.keydist.service.IDRequestService;
 import hamaster.gradesign.keydist.service.UserService;
+import hamaster.gradesign.keygen.IBECSR;
 import hamaster.gradesign.keygen.IdentityDescription;
 import hamaster.gradesign.keygen.entity.IdentityDescriptionEntity;
 
@@ -109,13 +113,37 @@ public class ClientRestController {
      * 用户为要请求的ID所设置的访问密码（长度信息1字节 数据最多255字节）</li></ul>
      * @return 包含处理结果的字节数组 长度为1
      */
-    @PutMapping("/api/keyreq/{user}/{id}")
+    @PutMapping("/api/keyreq/{user}/{sys}/{id}")
     public Map<String, String> applyUserKey(@PathVariable(value = "user") String username,
             @RequestParam(value = "p", required = true) String password,
+            @PathVariable(value = "sys") String systemStr,
             @PathVariable(value = "id") String keyID,
             @RequestParam(value = "k", required = true) String keyPassword) {
-
-        return errorMessage(ClientService.ERR_EOF, "test only");
+        User owner = userService.loginWithUsername(username, password);
+        IDRequest exist = idRequestService.getByIDString(keyID);
+        if (exist != null) {
+            if (exist.getApplicant().equals(owner)) {
+                return errorMessage(ClientService.ERR_SUCCESS, "success");
+            } else {
+                return errorMessage(ClientService.ERR_ID_THEFT, "Users only have access to their own IDs");
+            }
+        }
+        Integer system;
+        try {
+            system = Integer.decode(systemStr);
+        } catch (NumberFormatException e) {
+            system = client.getCurrentSystemID();
+        }
+        exist = new IDRequest();
+        exist.setApplicant(owner);
+        exist.setApplicationDate(new Date());
+        exist.setIbeSystemId(system);
+        exist.setIdentityString(keyID);
+        exist.setStatus(IBECSR.APPLICATION_STARTED);
+        exist.setPassword(Hex.hex(Hash.sha512(keyPassword)));
+        exist.setPasswordToKeyGen(client.encryptSessionKeyForSystem(keyPassword.getBytes(), system));
+        idRequestService.save(exist);
+        return errorMessage(ClientService.ERR_SUCCESS, "success");
     }
 
     /*
