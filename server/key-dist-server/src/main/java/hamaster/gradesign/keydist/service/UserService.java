@@ -12,6 +12,7 @@ public interface UserService {
      */
     User loginWithEmail(String email, String password);
     User loginWithUsername(String username, String password);
+    User loginWithToken(String username, String token);
 
     boolean isEmailExist(String email);
 

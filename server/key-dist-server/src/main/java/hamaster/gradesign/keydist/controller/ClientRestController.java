@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -200,9 +201,19 @@ public class ClientRestController {
         return resp;
     }
 
-    /*
-    byte[] login(byte[] request) throws IOException;
-    */
+    @UserAuth
+    @GetMapping("/api/login/{user}")
+    public Map<String, ?> login(@PathVariable(value = "user") String username,
+            @RequestParam(value = "p", required = true) String password) {
+        User owner = userService.loginWithUsername(username, password);
+        Map<String, Object> resp = new HashMap<String, Object>();
+        String uuid = UUID.randomUUID().toString();
+        // TODO save UUID
+        resp.put("code", "0");
+        resp.put("user", owner);
+        resp.put("sessionKey", uuid);
+        return resp;
+    }
 
     private Map<String, String> errorMessage(int code, String message) {
         Map<String, String> resp = new HashMap<String, String>();

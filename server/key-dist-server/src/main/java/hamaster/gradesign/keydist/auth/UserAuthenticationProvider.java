@@ -2,6 +2,7 @@ package hamaster.gradesign.keydist.auth;
 
 import static java.util.Objects.requireNonNull;
 
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.core.AuthenticationException;
@@ -25,9 +26,9 @@ public class UserAuthenticationProvider extends AbstractUserDetailsAuthenticatio
 
     @Override
     protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-        UserDetails user = userService.loginWithEmail(username, authentication.getCredentials().toString());
+        UserDetails user = userService.loginWithToken(username, authentication.getCredentials().toString());
         if (user == null)
-            throw new AuthenticationException(String.format("Login failed for %s", username)) { private static final long serialVersionUID = 7839727064867305402L; };
+            throw new BadCredentialsException(String.format("Invalid token for user %s", username));
         return user;
     }
 }

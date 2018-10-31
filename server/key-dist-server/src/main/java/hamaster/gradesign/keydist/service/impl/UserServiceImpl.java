@@ -50,6 +50,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User loginWithToken(String username, String token) {
+        Optional<User> user = userRepo.findByUsername(username);
+        if (user.isPresent()) {
+            // TODO check list of valid tokens for a user
+        }
+        return null;
+    }
+
+    @Override
     public boolean isEmailExist(String email) {
         Optional<User> user = userRepo.findByEmail(email);
         return user.isPresent();
@@ -82,8 +91,30 @@ public class UserServiceImpl implements UserService {
     private User checkPassword(User user, String password) {
         String salt = User.formatDate(user.getRegDate());
         byte[] hash = Hash.sha512(new StringBuilder(password).append(salt).toString());
-        if (Hex.hex(hash).equalsIgnoreCase(user.getPassword()))
-            return user;
-        return null;
+        if (diffArray(hash, Hex.unhex(user.getPassword())))
+            return null;
+        return user;
+    }
+
+    /**
+     * Compare two byte array with constant timing
+     * @param a first byte array
+     * @param b second byte array
+     * @return true if a != b, false otherwise
+     */
+    private boolean diffArray(byte[] a, byte[] b) {
+        int sum, size;
+        if (a.length > b.length) {
+            size = b.length;
+            sum = a.length - b.length;
+        } else {
+            size = a.length;
+            sum = b.length - a.length;
+        }
+        for (int i = 0; i < size; i++) {
+            int j = a[i] - b[i];
+            sum += j * j;
+        }
+        return sum != 0;
     }
 }
