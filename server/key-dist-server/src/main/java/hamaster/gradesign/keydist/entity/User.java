@@ -1,8 +1,9 @@
 package hamaster.gradesign.keydist.entity;
 
-import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -14,13 +15,18 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * 保存用户信息的实体类
  * @author <a href="mailto:wangyeee@gmail.com">Wang Ye</a>
  */
 @Entity
 @Table(name = "IBE_USER")
-public class User implements Serializable, Cloneable {
+public class User implements Cloneable, UserDetails {
     private static final long serialVersionUID = -1101813432750693173L;
 
     /**
@@ -88,6 +94,7 @@ public class User implements Serializable, Cloneable {
         this.userId = userId;
     }
 
+    @Override
     public String getUsername() {
         return username;
     }
@@ -104,6 +111,8 @@ public class User implements Serializable, Cloneable {
         this.email = email;
     }
 
+    @JsonIgnore
+    @Override
     public String getPassword() {
         return password;
     }
@@ -223,5 +232,31 @@ public class User implements Serializable, Cloneable {
     public final static String formatDate(Date date) {
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd#HH:mm:ss");
         return format.format(date);
+    }
+
+    @JsonIgnore
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return status == USER_ACTIVE;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return status == USER_ACTIVE;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return status == USER_ACTIVE;
     }
 }
