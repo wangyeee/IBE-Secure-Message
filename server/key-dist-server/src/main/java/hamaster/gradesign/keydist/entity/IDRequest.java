@@ -18,6 +18,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import hamaster.gradesgin.ibe.IBEConstraints;
 import hamaster.gradesgin.ibe.io.SecureByteArrayOutputStream;
 import hamaster.gradesgin.util.Hex;
@@ -126,8 +128,17 @@ public class IDRequest implements Serializable, Cloneable {
         this.requestId = requestId;
     }
 
+    @JsonIgnore
     public User getApplicant() {
         return applicant;
+    }
+
+    /**
+     * for generate json use only
+     * @return applicant.getEmail()
+     */
+    public String getOwner() {
+        return applicant == null ? null : applicant.getEmail();
     }
 
     public void setApplicant(User applicant) {
@@ -142,6 +153,7 @@ public class IDRequest implements Serializable, Cloneable {
         this.identityString = identityString;
     }
 
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -178,6 +190,7 @@ public class IDRequest implements Serializable, Cloneable {
         this.passwordToKeyGen = passwordToKeyGen;
     }
 
+    @JsonIgnore
     public byte[] getPasswordToKeyGen() {
         return this.passwordToKeyGen;
     }

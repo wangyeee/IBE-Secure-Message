@@ -4,9 +4,11 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -173,9 +175,32 @@ public class ClientRestController {
         return errorMessage(ClientService.ERR_SUCCESS, "success");
     }
 
+    @UserAuth
+    @GetMapping("/api/allid/{user}")
+    public Map<String, ?> listIds(@PathVariable(value = "user") String username,
+            @RequestParam(value = "p", required = true) String password,
+            @RequestParam(value = "pg", required = false) String pageStr,
+            @RequestParam(value = "n", required = false) String amountStr) {
+        int page, amount;
+        try {
+            page = Integer.parseInt(pageStr);
+        } catch (NumberFormatException e) {
+            page = 1;
+        }
+        try {
+            amount = Integer.parseInt(amountStr);
+        } catch (NumberFormatException e) {
+            amount = 10;
+        }
+        User owner = userService.loginWithUsername(username, password);
+        List<IDRequest> list = idRequestService.list(owner, page - 1, amount);
+        Map<String, Object> resp = new HashMap<String, Object>();
+        resp.put("code", "0");
+        resp.put("ids", list);
+        return resp;
+    }
+
     /*
-    byte[] listIds(byte[] request) throws IOException;
-    byte[] listSystems(byte[] request) throws IOException;
     byte[] login(byte[] request) throws IOException;
     */
 
