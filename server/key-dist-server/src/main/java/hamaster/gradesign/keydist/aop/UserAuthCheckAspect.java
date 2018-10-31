@@ -16,12 +16,12 @@ import hamaster.gradesign.keydist.service.UserService;
 
 @Aspect
 @Component
-public class UserAuthCheck {
+public class UserAuthCheckAspect {
 
     private UserService userService;
 
     @Autowired
-    public UserAuthCheck(UserService userService) {
+    public UserAuthCheckAspect(UserService userService) {
         this.userService = requireNonNull(userService);
     }
 
@@ -29,9 +29,8 @@ public class UserAuthCheck {
             "code", Integer.toString(ClientService.ERR_WRONG_PWD),
             "message", "Incorrect username or password");
 
-    @Around(value = "execution(* hamaster.gradesign.keydist.controller.ClientRestController.*(..))")
+    @Around("@annotation(UserAuth)")
     public Object checkUserNameAndPassword(ProceedingJoinPoint joinPoint) throws Throwable {
-        System.out.println("hamaster.gradesign.keydist.controller.ClientRestController[*] is called");
         Object[] arguments = joinPoint.getArgs();
         User owner = userService.loginWithUsername(arguments[0].toString(), arguments[1].toString());
         if (owner == null) {

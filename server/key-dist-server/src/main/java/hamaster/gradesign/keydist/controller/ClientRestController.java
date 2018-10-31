@@ -19,6 +19,7 @@ import hamaster.gradesgin.ibs.IBSCertificate;
 import hamaster.gradesgin.ibs.IBSSignature;
 import hamaster.gradesgin.util.Hash;
 import hamaster.gradesgin.util.Hex;
+import hamaster.gradesign.keydist.aop.UserAuth;
 import hamaster.gradesign.keydist.daemon.KeyGenClient;
 import hamaster.gradesign.keydist.entity.IDRequest;
 import hamaster.gradesign.keydist.entity.User;
@@ -67,6 +68,7 @@ public class ClientRestController {
      * 所有者字符串长度</li><li>
      * 根证书签名</li></ul>
      */
+    @UserAuth
     @PostMapping("/api/key/{user}/{id}")
     public Map<String, String> getUserKey(@PathVariable(value = "user") String username,
             @RequestParam(value = "p", required = true) String password,
@@ -113,6 +115,7 @@ public class ClientRestController {
      * 用户为要请求的ID所设置的访问密码（长度信息1字节 数据最多255字节）</li></ul>
      * @return 包含处理结果的字节数组 长度为1
      */
+    @UserAuth
     @PutMapping("/api/keyreq/{user}/{sys}/{id}")
     public Map<String, String> applyUserKey(@PathVariable(value = "user") String username,
             @RequestParam(value = "p", required = true) String password,
@@ -146,8 +149,31 @@ public class ClientRestController {
         return errorMessage(ClientService.ERR_SUCCESS, "success");
     }
 
+    /**
+     * 注册一个新用户
+     * @param request 注册用户请求 包含：<ul><li>
+     * 用户名（长度1字节 内容最多255字节 UTF-8编码）</li><li>
+     * 电子邮件（长度1字节 内容最多255字节 UTF-8编码）</li><li>
+     * 密码（长度1字节 内容最多255字节）</li></ul>
+     * @return 包含处理结果的字节数组 长度为1
+     */
+    @PostMapping("/api/reg/{user}")
+    public Map<String, String> register(@PathVariable(value = "user") String username,
+            @RequestParam(value = "p", required = true) String password,
+            @RequestParam(value = "email", required = true) String email) {
+        if (userService.isUsernameExist(username))
+            return errorMessage(ClientService.ERR_ID_USED, String.format("user name %s has been used", username));
+        if (userService.isEmailExist(email))
+            return errorMessage(ClientService.ERR_EMAIL_USED, String.format("email %s has been used", email));
+        User user = new User();
+        user.setEmail(email);
+        user.setRegDate(new Date());
+        user.setUsername(username);
+        userService.register(user, password);
+        return errorMessage(ClientService.ERR_SUCCESS, "success");
+    }
+
     /*
-    byte[] register(byte[] request) throws IOException;
     byte[] listIds(byte[] request) throws IOException;
     byte[] listSystems(byte[] request) throws IOException;
     byte[] login(byte[] request) throws IOException;
