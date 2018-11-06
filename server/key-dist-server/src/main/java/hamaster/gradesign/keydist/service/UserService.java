@@ -17,6 +17,7 @@ public interface UserService {
 
     UserToken appLogin(String username, String password);
     UserToken appLogin(String username, String password, String description);
+    void appLogout(String username, String uuid);
 
     boolean isEmailExist(String email);
 

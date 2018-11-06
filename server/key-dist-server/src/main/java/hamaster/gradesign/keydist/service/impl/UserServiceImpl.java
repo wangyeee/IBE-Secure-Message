@@ -115,6 +115,17 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
+    @Override
+    public void appLogout(String username, String uuid) {
+        Optional<UserToken> token = userTokenDAO.findOneByUUID(uuid);
+        if (token.isPresent()) {
+            UserToken u = token.get();
+            if (u.getUser().getUsername().equals(username)) {
+                userTokenDAO.delete(u);
+            }
+        }
+    }
+
     private User checkPassword(User user, String password) {
         String salt = User.formatDate(user.getRegDate());
         byte[] hash = Hash.sha512(new StringBuilder(password).append(salt).toString());

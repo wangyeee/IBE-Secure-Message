@@ -214,6 +214,13 @@ public class ClientRestController {
         return resp;
     }
 
+    @GetMapping("/api/logout/{user}")
+    public Map<String, String> appLogout(@PathVariable(value = "user") String username,
+            @RequestParam(value = "t", required = true) String uuid) {
+        userService.appLogout(username, uuid);
+        return errorMessage(0, "Success");
+    }
+
     private Map<String, String> errorMessage(int code, String message) {
         Map<String, String> resp = new HashMap<String, String>();
         resp.put("code", Integer.toString(code));
