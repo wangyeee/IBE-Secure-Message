@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -21,7 +22,8 @@ public class UserToken implements Serializable {
     @Column(name = "TOKEN_ID")
     private Integer tokenId;
 
-    @JoinColumn(name = "TOKEN_USER", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "TOKEN_USER")
     private User user;
 
     @Column(nullable = false, name = "TOKEN_UUID")

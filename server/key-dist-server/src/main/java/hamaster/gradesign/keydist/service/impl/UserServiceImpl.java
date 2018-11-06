@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,8 +14,10 @@ import hamaster.gradesgin.util.Hex;
 import hamaster.gradesign.keydist.daemon.KeyGenClient;
 import hamaster.gradesign.keydist.dao.IDRequestDAO;
 import hamaster.gradesign.keydist.dao.UserDAO;
+import hamaster.gradesign.keydist.dao.UserTokenDAO;
 import hamaster.gradesign.keydist.entity.IDRequest;
 import hamaster.gradesign.keydist.entity.User;
+import hamaster.gradesign.keydist.entity.UserToken;
 import hamaster.gradesign.keydist.service.UserService;
 import hamaster.gradesign.keygen.IBECSR;
 
@@ -24,10 +27,12 @@ public class UserServiceImpl implements UserService {
     private UserDAO userRepo;
     private IDRequestDAO idRequestRepo;
     private KeyGenClient client;
+    private UserTokenDAO userTokenDAO;
 
     @Autowired
-    public UserServiceImpl(UserDAO userRepo, IDRequestDAO idRequestRepo, KeyGenClient client) {
+    public UserServiceImpl(UserDAO userRepo, IDRequestDAO idRequestRepo, UserTokenDAO userTokenDAO, KeyGenClient client) {
         this.userRepo = requireNonNull(userRepo);
+        this.userTokenDAO = requireNonNull(userTokenDAO);
         this.idRequestRepo = requireNonNull(idRequestRepo);
         this.client = requireNonNull(client);
     }
@@ -50,10 +55,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User loginWithToken(String username, String token) {
-        Optional<User> user = userRepo.findByUsername(username);
-        if (user.isPresent()) {
-            // TODO check list of valid tokens for a user
+    public User loginWithToken(String username, String uuid) {
+        Optional<UserToken> token = userTokenDAO.findOneByUUID(uuid);
+        if (token.isPresent()) {
+            if (token.get().getUser().getUsername().equals(username)) {
+                return token.get().getUser();
+            }
         }
         return null;
     }
@@ -86,6 +93,26 @@ public class UserServiceImpl implements UserService {
     public boolean isUsernameExist(String username) {
         Optional<User> user = userRepo.findByUsername(username);
         return user.isPresent();
+    }
+    
+    @Override
+    public UserToken appLogin(String username, String password) {
+        return appLogin(username, password, null);
+    }
+    
+    @Override
+    public UserToken appLogin(String username, String password, String description) {
+        User user = loginWithUsername(username, password);
+        if (user != null) {
+            UserToken token = new UserToken();
+            token.setUser(user);
+            token.setDescription(description);
+            token.setGenerationDate(new Date());
+            token.setUuid(UUID.randomUUID().toString());
+            userTokenDAO.save(token);
+            return token;
+        }
+        return null;
     }
 
     private User checkPassword(User user, String password) {

@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +25,7 @@ import hamaster.gradesign.keydist.aop.UserAuth;
 import hamaster.gradesign.keydist.daemon.KeyGenClient;
 import hamaster.gradesign.keydist.entity.IDRequest;
 import hamaster.gradesign.keydist.entity.User;
+import hamaster.gradesign.keydist.entity.UserToken;
 import hamaster.gradesign.keydist.service.ClientService;
 import hamaster.gradesign.keydist.service.IDRequestService;
 import hamaster.gradesign.keydist.service.UserService;
@@ -203,15 +203,14 @@ public class ClientRestController {
 
     @UserAuth
     @GetMapping("/api/login/{user}")
-    public Map<String, ?> login(@PathVariable(value = "user") String username,
+    public Map<String, ?> appLogin(@PathVariable(value = "user") String username,
             @RequestParam(value = "p", required = true) String password) {
-        User owner = userService.loginWithUsername(username, password);
+        UserToken token = userService.appLogin(username, password, null);
         Map<String, Object> resp = new HashMap<String, Object>();
-        String uuid = UUID.randomUUID().toString();
-        // TODO save UUID
         resp.put("code", "0");
-        resp.put("user", owner);
-        resp.put("sessionKey", uuid);
+        resp.put("user", token.getUser());
+        resp.put("sessionKey", token.getUuid());
+        resp.put("effDate", token.getGenerationDate());
         return resp;
     }
 
