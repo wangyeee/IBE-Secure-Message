@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import hamaster.gradesgin.ibe.IBEConstraints;
 import hamaster.gradesgin.ibe.IBEPrivateKey;
 import hamaster.gradesgin.ibe.IBEPublicParameter;
+import hamaster.gradesgin.ibe.core.IBEEngine;
 import hamaster.gradesgin.ibs.IBSCertificate;
 import hamaster.gradesgin.ibs.IBSSignature;
 import hamaster.gradesgin.util.Hash;
@@ -202,7 +205,7 @@ public class ClientRestController {
     }
 
     @UserAuth
-    @GetMapping("/api/login/{user}")
+    @PostMapping("/api/login/{user}")
     public Map<String, ?> appLogin(@PathVariable(value = "user") String username,
             @RequestParam(value = "p", required = true) String password) {
         UserToken token = userService.appLogin(username, password, null);
@@ -214,11 +217,36 @@ public class ClientRestController {
         return resp;
     }
 
-    @GetMapping("/api/logout/{user}")
+    @DeleteMapping("/api/logout/{user}")
     public Map<String, String> appLogout(@PathVariable(value = "user") String username,
             @RequestParam(value = "t", required = true) String uuid) {
         userService.appLogout(username, uuid);
         return errorMessage(0, "Success");
+    }
+
+    @GetMapping("/api/chk/{user}/{uuid}")
+    public Map<String, String> appVerifyUUID(@PathVariable(value = "user") String username,
+            @PathVariable(value = "uuid") String uuid,
+            @RequestParam(value = "s", required = true) String signatureContent) {
+        IBSSignature signature = IBEConstraints.fromByteArray(Hex.unhex(signatureContent), IBSSignature.class);
+        if (signature == null)
+            return signedErrorMessage(1, "Invalid request signature");
+        byte[] hash = Hash.sha512(String.format("%s-%s", username, uuid));
+        if (IBEEngine.verify(signature, hash)) {
+            User user = userService.loginWithToken(username, uuid);
+            if (user != null)
+                return signedErrorMessage(0, "Valid username and UUID");
+            return signedErrorMessage(2, "Invalid username and UUID");
+        }
+        return signedErrorMessage(3, "Failed to verify request signature");
+    }
+
+    private Map<String, String> signedErrorMessage(int code, String message) {
+        Map<String, String> resp = errorMessage(code, message);
+        byte[] hash = Hash.sha512(String.format("%d-%s", code, message));
+        IBSSignature signature = IBEEngine.sign(client.serverCertificate(), hash, "SHA-512");
+        resp.put("signature", Hex.hex(signature.toByteArray()));
+        return resp;
     }
 
     private Map<String, String> errorMessage(int code, String message) {
