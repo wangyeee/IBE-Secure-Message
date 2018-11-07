@@ -3,6 +3,7 @@ package hamaster.gradesign.keydist.service.impl;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -124,6 +125,14 @@ public class UserServiceImpl implements UserService {
                 userTokenDAO.delete(u);
             }
         }
+    }
+
+    @Override
+    public List<UserToken> listAllUserTokens(String username, String password) {
+        User user = loginWithUsername(username, password);
+        if (user == null)
+            return null;
+        return userTokenDAO.findAllByUser(user);
     }
 
     private User checkPassword(User user, String password) {

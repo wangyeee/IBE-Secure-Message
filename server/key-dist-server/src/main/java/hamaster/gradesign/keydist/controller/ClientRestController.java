@@ -207,8 +207,9 @@ public class ClientRestController {
     @UserAuth
     @PostMapping("/api/login/{user}")
     public Map<String, ?> appLogin(@PathVariable(value = "user") String username,
-            @RequestParam(value = "p", required = true) String password) {
-        UserToken token = userService.appLogin(username, password, null);
+            @RequestParam(value = "p", required = true) String password,
+            @RequestParam(value = "d", required = false, defaultValue = "") String description) {
+        UserToken token = userService.appLogin(username, password, description);
         Map<String, Object> resp = new HashMap<String, Object>();
         resp.put("code", "0");
         resp.put("user", token.getUser());
@@ -222,6 +223,19 @@ public class ClientRestController {
             @RequestParam(value = "t", required = true) String uuid) {
         userService.appLogout(username, uuid);
         return errorMessage(0, "Success");
+    }
+
+    @UserAuth
+    @GetMapping("/api/utk/{user}")
+    public Map<String, ?> getAllUserTokens(@PathVariable(value = "user") String username,
+            @RequestParam(value = "p", required = true) String password) {
+        List<UserToken> tokens = userService.listAllUserTokens(username, password);
+        if (tokens == null)
+            tokens = List.of();
+        Map<String, Object> resp = new HashMap<String, Object>();
+        resp.put("code", "0");
+        resp.put("tokens", tokens);
+        return resp;
     }
 
     @GetMapping("/api/chk/{user}/{uuid}")

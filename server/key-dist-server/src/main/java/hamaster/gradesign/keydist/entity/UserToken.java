@@ -12,6 +12,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "IBE_USER_TOKEN")
 public class UserToken implements Serializable {
@@ -46,6 +48,11 @@ public class UserToken implements Serializable {
         this.tokenId = tokenId;
     }
 
+    public String getUsername() {
+        return user == null ? null : user.getUsername();
+    }
+
+    @JsonIgnore
     public User getUser() {
         return user;
     }

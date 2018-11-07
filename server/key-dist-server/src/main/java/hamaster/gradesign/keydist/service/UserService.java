@@ -1,5 +1,7 @@
 package hamaster.gradesign.keydist.service;
 
+import java.util.List;
+
 import hamaster.gradesign.keydist.entity.User;
 import hamaster.gradesign.keydist.entity.UserToken;
 
@@ -17,6 +19,7 @@ public interface UserService {
 
     UserToken appLogin(String username, String password);
     UserToken appLogin(String username, String password, String description);
+    List<UserToken> listAllUserTokens(String username, String password);
     void appLogout(String username, String uuid);
 
     boolean isEmailExist(String email);
